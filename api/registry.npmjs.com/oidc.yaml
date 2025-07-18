@@ -1,0 +1,89 @@
+paths:
+  /-/npm/v1/oidc/token/exchange/package/{package_name}:
+    post:
+      tags:
+        - registry.npmjs.org
+      summary: Exchange OIDC id_token for npm registry token
+      description: |
+        Exchanges a valid OIDC id_token (provided as a Bearer token) for a short-lived npm registry access token for the specified package.
+
+        **OIDC Token Requirements:**
+        - The Bearer token must be an OIDC id_token from a supported Identity Provider (IdP)
+        - The `aud` (audience) claim must be set to `npm:registry.npmjs.org`
+
+        **Important:** The Bearer token must be an OIDC id_token from an Identity Provider (IdP) we support. This endpoint differs from the rest of the API, which expects a standard npm access token.
+      operationId: exchangeOidcToken
+      parameters:
+        - name: package_name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Name of the npm package
+      security:
+        - bearerAuth: []
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token_type:
+                    type: string
+                    enum: ["oidc"]
+                  token:
+                    type: string
+                  created:
+                    type: string
+                    format: date-time
+                    example: "2025-07-18T10:30:00.000Z"
+                  expires:
+                    type: string
+                    format: date-time
+                    example: "2025-07-18T11:30:00.000Z"
+                required:
+                  - token_type
+                  - token
+                  - created
+                  - expires
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OIDC token exchange error - bad request
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OIDC token exchange error - unauthorized
+        "404":
+          description: Package not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OIDC token exchange error - package not found
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: OIDC token exchange error - internal server error
