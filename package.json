@@ -7,7 +7,8 @@
     "openapi-merge-cli": "^1.3.2"
   },
   "scripts": {
-    "merge": "cd api && npx openapi-merge-cli -c merge-config.yaml",
-    "build": "npm run merge && npx @redocly/cli build-docs api/api.yaml -o html/index.html"
+    "generate": "cd api && npx openapi-merge-cli -c merge-config.yaml",
+    "validate": "npx @redocly/cli lint openapi.yaml",
+    "build": "npm run generate && npm run validate && npx @redocly/cli build-docs openapi.yaml -o html/index.html"
   }
 }

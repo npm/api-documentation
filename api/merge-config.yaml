@@ -2,4 +2,4 @@ inputs:
   - inputFile: base.yaml
   - inputFile: registry.npmjs.com/oidc.yaml
 
-output: api.yaml
+output: ../openapi.yaml
