@@ -6,9 +6,9 @@ on:
       - main
     paths:
       - "api/**"
-  pull_request:
-    paths:
-      - "api/**"
+  # pull_request:
+  #   paths:
+  #     - "api/**"
   workflow_dispatch:
 
 permissions:
@@ -45,7 +45,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          preview: true
+          preview: ${{ github.event_name == 'pull_request' }}
 
       - name: Comment PR with preview link
         if: github.event_name == 'pull_request'
