@@ -1,5 +1,5 @@
 {
-  "name": "openapi-documentation",
+  "name": "api-documentation",
   "version": "1.0.0",
   "description": "npm registry API documentation build for GitHub Pages",
   "devDependencies": {
