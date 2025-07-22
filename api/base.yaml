@@ -3,7 +3,7 @@ info:
   title: npm Registry API
   version: 1.0.0
   description: |
-    Welcome to the npm registry API documentation!!
+    Welcome to the npm registry API documentation!
 
   x-logo:
     url: |
