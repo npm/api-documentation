@@ -1,0 +1,14 @@
+{
+  "name": "api-documentation",
+  "version": "1.0.0",
+  "description": "npm registry API documentation build for GitHub Pages",
+  "devDependencies": {
+    "@redocly/cli": "^1.34.4",
+    "openapi-merge-cli": "^1.3.2"
+  },
+  "scripts": {
+    "generate": "cd api && npx openapi-merge-cli -c merge-config.yaml",
+    "validate": "npx @redocly/cli lint openapi.yaml",
+    "build": "npm run generate && npm run validate && npx @redocly/cli build-docs openapi.yaml -o html/index.html"
+  }
+}
