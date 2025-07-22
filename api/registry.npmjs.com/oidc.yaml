@@ -19,7 +19,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Name of the npm package
+          description: Name of the npm package, url-encoded
       security:
         - bearerAuth: []
       responses:
