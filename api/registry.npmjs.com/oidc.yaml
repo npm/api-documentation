@@ -5,7 +5,7 @@ paths:
         - registry.npmjs.org
       summary: Exchange OIDC id_token for npm registry token
       description: |
-        Exchanges a valid OIDC id_token (provided as a Bearer token) for a short-lived npm registry access token for the specified package.
+        Exchange a valid OIDC id_token (provided as a Bearer token) for a short-lived npm registry access token for the specified package.
 
         **OIDC Token Requirements:**
         - The Bearer token must be an OIDC id_token from a supported Identity Provider (IdP)
