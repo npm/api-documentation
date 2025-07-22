@@ -9,7 +9,6 @@ on:
   pull_request:
     paths:
       - "api/**"
-      - "build-deploy.yml"
   workflow_dispatch:
 
 permissions:
