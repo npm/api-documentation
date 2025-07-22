@@ -8,7 +8,7 @@ paths:
         Exchanges a valid OIDC id_token (provided as a Bearer token) for a short-lived npm registry access token for the specified package.
 
         **OIDC Token Requirements:**
-        - The Bearer token must be an OIDC id_token from a supported Identity Provider (IdP)
+        - The Bearer token must be an xxxxxOIDC id_token from a supported Identity Provider (IdP)
         - The `aud` (audience) claim must be set to `npm:registry.npmjs.org`
 
         **Important:** The Bearer token must be an OIDC id_token from an Identity Provider (IdP) npm supports. This endpoint differs from the rest of the API, which expects a standard npm access token.
