@@ -9,6 +9,7 @@ on:
   pull_request:
     paths:
       - "api/**"
+      - "build-deploy.yml"
   workflow_dispatch:
 
 permissions:
@@ -45,7 +46,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          preview: ${{ github.event_name == 'pull_request' }}
+          preview: true
 
       - name: Comment PR with preview link
         if: github.event_name == 'pull_request'
