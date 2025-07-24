@@ -21,7 +21,6 @@ tags:
     x-displayName: registry.npmjs.org
     description: |
       API endpoints for the npm registry endpoint at `registry.npmjs.org`.
-    asd
 
 components:
   securitySchemes:
