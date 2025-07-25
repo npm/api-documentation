@@ -35,5 +35,5 @@ module.exports = {
   requiredPackages: {
     devDependencies: [],
   },
-  allowPaths: [],
+  allowPaths: ['/api/'],
 }
