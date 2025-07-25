@@ -51,7 +51,7 @@ jobs:
         with:
           script: |
             const previewUrl = '${{ steps.deployment.outputs.page_url }}';
-            const comment = `🚀 **Preview deployed!**
+            const comment = `🚀🚀 **Preview deployed!** 🚀🚀
 
             You can view the preview of your changes here: ${previewUrl}
 
