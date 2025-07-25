@@ -19,11 +19,13 @@ permissions:
   pull-requests: write
 
 jobs:
-  build-and-upload:
+  build-and-deploy:
     permissions:
       contents: read
-      pages: read
-    name: Build and Upload
+      id-token: write
+      pages: write
+      pull-requests: write
+    name: Build and Deploy
     if: github.repository_owner == 'npm'
     runs-on: ubuntu-latest
     steps:
@@ -49,18 +51,7 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./html
-
-  deploy:
-    permissions:
-      pages: write
-      actions: read
-      id-token: write
-    environment:
-      name: github-pages
-      url: $\{{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build-and-upload
-    steps:
+          
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
