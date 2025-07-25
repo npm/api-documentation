@@ -8,6 +8,9 @@ module.exports = {
       '.commitlintrc.js': false,
       '.github/settings.yml': false,
       '.github/dependabot.yml': 'dependabot-yml.hbs',
+      '.github/workflows/ci-release.yml': false,
+      '.github/workflows/release-integration.yml': false,
+      '.github/workflows/release.yml': false,
     },
   },
   rootModule: {
