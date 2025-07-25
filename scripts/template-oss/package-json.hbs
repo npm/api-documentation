@@ -3,6 +3,7 @@
     "lint": "npm run lint:yaml && npm run lint:js",
     "lint:yaml": "npm run generate && npx @redocly/cli lint openapi.yaml",
     "lint:js": "eslint \"**/*.{js,mjs}\"",
+    "lintfix:js": "npm run lint:js -- --fix",
     "test": {{{ del }}},
     "snap": {{{ del }}},
     "format": "prettier --write ."

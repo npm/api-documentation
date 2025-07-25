@@ -20,7 +20,8 @@
     "posttest": "npm run lint",
     "format": "prettier --write .",
     "lint:yaml": "npm run generate && npx @redocly/cli lint openapi.yaml",
-    "lint:js": "eslint \"**/*.{js,mjs}\""
+    "lint:js": "eslint \"**/*.{js,mjs}\"",
+    "lintfix:js": "npm run lint:js -- --fix"
   },
   "author": "GitHub Inc.",
   "repository": {
