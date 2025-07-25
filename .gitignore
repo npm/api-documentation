@@ -15,6 +15,7 @@
 !/.prettierignore
 !/.prettierrc.js
 !/.release-please-manifest.json
+!/api/
 !/bin/
 !/CHANGELOG*
 !/CODE_OF_CONDUCT.md

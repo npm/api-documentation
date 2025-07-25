@@ -1,7 +1,7 @@
 module.exports = {
   rootRepo: {
     add: {
-      '.github/workflows/ci.yml': false,
+      '.github/workflows/ci.yml': 'ci-yml.hbs',
       '.github/workflows/publish.yml': false,
       '.github/CODEOWNERS': false,
       '.github/ISSUE_TEMPLATE/bug.yml': false,
