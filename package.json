@@ -5,6 +5,7 @@
   "devDependencies": {
     "@npmcli/template-oss": "4.25.0",
     "@redocly/cli": "^1.34.4",
+    "eslint": "^9.31.0",
     "openapi-merge-cli": "^1.3.2"
   },
   "scripts": {
@@ -12,31 +13,24 @@
     "validate": "npx @redocly/cli lint openapi.yaml",
     "build": "npm run generate && npm run validate && npx @redocly/cli build-docs openapi.yaml -o html/index.html",
     "eslint": "eslint \"**/*.{js,cjs,ts,mjs,jsx,tsx}\"",
-    "lint": "npm run eslint",
+    "lint": "npm run lint:yaml && npm run lint:js",
     "lintfix": "npm run eslint -- --fix",
     "postlint": "template-oss-check",
     "template-oss-apply": "template-oss-apply --force",
-    "snap": "tap",
-    "test": "tap",
-    "posttest": "npm run lint"
+    "posttest": "npm run lint",
+    "format": "prettier --write .",
+    "lint:yaml": "npm run generate && npx @redocly/cli lint openapi.yaml",
+    "lint:js": "eslint \"**/*.{js,mjs}\""
   },
   "author": "GitHub Inc.",
-  "files": [
-    "bin/",
-    "lib/"
-  ],
   "repository": {
     "type": "git",
     "url": "git+https://github.com/npm/api-documentation.git"
   },
   "templateOSS": {
     "//@npmcli/template-oss": "This file is partially managed by @npmcli/template-oss. Edits may be overwritten.",
-    "version": "4.25.0"
-  },
-  "tap": {
-    "nyc-arg": [
-      "--exclude",
-      "tap-snapshots/**"
-    ]
+    "version": "4.25.0",
+    "content": "./scripts/template-oss",
+    "dependabotInterval": "weekly"
   }
 }

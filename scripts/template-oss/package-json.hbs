@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "lint": "npm run lint:yaml && npm run lint:js",
+    "lint:yaml": "npm run generate && npx @redocly/cli lint openapi.yaml",
+    "lint:js": "eslint \"**/*.{js,mjs}\"",
+    "test": {{{ del }}},
+    "snap": {{{ del }}},
+    "format": "prettier --write ."
+  },
+  "files": {{{ del }}},
+  "tap": {{{ del }}}
+}

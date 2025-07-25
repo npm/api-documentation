@@ -6,7 +6,7 @@ updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: daily
+      interval: weekly
     target-branch: "main"
     allow:
       - dependency-type: direct
@@ -17,3 +17,11 @@ updates:
     labels:
       - "Dependencies"
     open-pull-requests-limit: 10
+    groups:
+      dependency-updates:
+        applies-to: version-updates
+        patterns:
+          - "*"
+        update-types:
+          - "minor"
+          - "patch"

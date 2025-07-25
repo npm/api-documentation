@@ -23,6 +23,7 @@
 !/lib/
 !/LICENSE*
 !/map.js
+!/package-lock.json
 !/package.json
 !/README*
 !/release-please-config.json
