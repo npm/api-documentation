@@ -21,10 +21,6 @@ tags:
     x-displayName: registry.npmjs.org
     description: |
       API endpoints for the npm registry endpoint at `registry.npmjs.org`.
-  - name: replicate.npmjs.org
-    x-displayName: replicate.npmjs.org
-    description: |
-      API endpoints for the npm registry endpoint at `replicate.npmjs.org`.
 
 components:
   securitySchemes:
