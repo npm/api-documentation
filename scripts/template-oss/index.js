@@ -18,7 +18,7 @@ module.exports = {
       'package.json': { file: 'package-json.hbs', overwrite: false },
       '.eslintrc.js': false,
       'CODE_OF_CONDUCT.md': false,
-      'CONTRIBUTING.md': false,
+      'CONTRIBUTING.md': 'contributing-md.hbs',
     },
   },
   workspaceRepo: {
