@@ -26,6 +26,9 @@ jobs:
       id-token: write
       pages: write
       pull-requests: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
     name: Build and Deploy
     if: github.repository_owner == 'npm'
     runs-on: ubuntu-latest
