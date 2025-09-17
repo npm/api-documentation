@@ -1,5 +1,6 @@
 {
   "name": "api-documentation",
+  "private": true,
   "version": "1.0.0",
   "description": "npm registry API documentation build for GitHub Pages",
   "devDependencies": {
