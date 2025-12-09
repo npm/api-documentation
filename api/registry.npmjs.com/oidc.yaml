@@ -2,7 +2,7 @@ paths:
   /-/npm/v1/oidc/token/exchange/package/{package_name}:
     post:
       tags:
-        - registry.npmjs.org
+        - OIDC
       summary: Exchange OIDC id_token for npm registry token
       description: |
         Exchange a valid OIDC id_token (provided as a Bearer token) for a short-lived npm registry access token for the specified package.
@@ -21,7 +21,7 @@ paths:
             type: string
           description: Name of the npm package, url-encoded
       security:
-        - bearerAuth: []
+        - oidcIdToken: []
       responses:
         "201":
           description: "Success"

@@ -1,0 +1,683 @@
+paths:
+  /-/npm/v1/tokens:
+    post:
+      tags:
+        - Tokens
+      summary: Create npm access token
+      description: |
+        Create a new npm access token with customizable permissions, scope restrictions,
+        expiration, and CIDR IP range limitations.
+        
+        **Requirements:**
+        - Must be authenticated
+        - **Two-factor authentication is required for this endpoint**
+          - If 2FA is enabled on your account, provide the OTP via the `npm-otp` header
+          - If 2FA is not enabled, an email OTP will be sent and must be provided via the `npm-otp` header
+          - For WebAuthn users, the OTP is returned in the `doneUrl` after authentication
+        
+        **Important notices:**
+        - All responses include security notices via the `npm-notice` header regarding token limitations
+      operationId: createToken
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: |
+            Bearer token for authentication. Must be an npm access token.
+            
+            **Format:** `Bearer <token>`
+            
+            **Accepted token types:**
+            - npm access token (traditional user token created via `npm login`)
+        - name: npm-otp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Always required for this endpoint.
+            
+            **How to obtain the OTP:**
+            - If 2FA is enabled on your account, provide the OTP from your configured 2FA method
+            - If 2FA is not enabled, an email OTP will be sent and must be provided (format: `<8-digit-otp-from-email>`)
+            - For WebAuthn users, the OTP is returned by polling the `doneUrl` which returns an OTP code after hardware authentication (format: `<16-digit-otp>`)
+        - name: npm-auth-type
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [web]
+          description: |
+            Authentication type for web-based flow. When set to "web", enables
+            browser-based authentication flow for WebAuthn users.
+        - name: npm-command
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [token]
+          description: |
+            Command context for the request. When set to "token", indicates
+            this is a token creation command.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                password:
+                  type: string
+                  description: User password for authentication
+                name:
+                  type: string
+                  description: Human-readable name for the token
+                token_description:
+                  type: string
+                  description: Detailed description of token purpose
+                  nullable: true
+                expires:
+                  oneOf:
+                    - type: number
+                    - type: string
+                  description: 'Expiration in days (number) or ISO date string. Read-write tokens: maximum 90 days, defaults to 7 days. Read-only tokens: unlimited maximum, defaults to 30 days'
+                bypass_2fa:
+                  type: boolean
+                  description: Allow token to bypass 2FA requirements
+                  default: false
+                cidr:
+                  type: array
+                  items:
+                    type: string
+                  description: IP ranges that can use this token
+                  nullable: true
+                packages:
+                  type: array
+                  items:
+                    type: string
+                  description: 'Specific packages this token can access. Use ["*"] for all packages. Empty arrays are treated as not provided'
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  description: Scoped packages this token can access. Empty arrays are treated as not provided
+                orgs:
+                  type: array
+                  items:
+                    type: string
+                  description: Organizations this token can access. Empty arrays are treated as not provided
+                packages_and_scopes_permission:
+                  type: string
+                  enum: ["read-only", "read-write", "no-access"]
+                  description: Permission for packages and scopes. Defaults to "read-only" if packages/scopes arrays have length > 0, otherwise "no-access"
+                orgs_permission:
+                  type: string
+                  enum: ["read-only", "read-write", "no-access"]
+                  description: Permission for organizations. Defaults to "read-only" if orgs array has length > 0, otherwise "no-access"
+              required:
+                - password
+                - name
+      security:
+        - npmSessionToken: []
+      responses:
+        "201":
+          description: "Token created successfully"
+          headers:
+            npm-notice:
+              description: |
+                Security notice regarding token limitations.
+                Example: "SECURITY NOTICE: Granular tokens now limited to 90 days with 2FA enforced by default. Update your CI/CD workflows to avoid disruption. Learn more: https://gh.io/npm-token-changes"
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  key:
+                    type: string
+                    description: The token ID (UUID format).
+                    example: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                  name:
+                    type: string
+                    description: Human-readable name for the token.
+                  description:
+                    type: string
+                    description: Detailed description of token purpose.
+                    nullable: true
+                  token:
+                    type: string
+                    description: 'The full token value. IMPORTANT: This is the only time you will see the complete token - store it securely. Format: npm_<40 characters>'
+                    example: npm_aBcDeFgHiJkLmNoPqRsTuVwXyZ1234567890
+                  expiry:
+                    type: string
+                    format: date-time
+                    description: The expiration date of the token in ISO 8601 format.
+                    nullable: true
+                  cidr:
+                    type: array
+                    items:
+                      type: string
+                    description: List of CIDR ranges that can use this token.
+                    nullable: true
+                  bypass_2fa:
+                    type: boolean
+                    description: Indicates if the token can bypass 2FA requirements.
+                  revoked:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the token was revoked. null for active tokens.
+                    nullable: true
+                  created:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the token was created.
+                  updated:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the token was last updated. null on creation.
+                    nullable: true
+                  accessed:
+                    type: string
+                    format: date-time
+                    description: Timestamp when the token was last accessed. null on creation.
+                    nullable: true
+                  permissions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Permission name (e.g., "package").
+                        action:
+                          type: string
+                          description: Permission action ("read" or "write").
+                    description: List of permissions granted to this token.
+                  scopes:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          description: Scope type (e.g., "package", "org").
+                        name:
+                          type: string
+                          description: Scope name.
+                    description: List of scopes this token has access to.
+        "400":
+          description: Bad request - Invalid parameters or validation failure
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              examples:
+                missingName:
+                  summary: Missing token name
+                  value:
+                    error: 'Token name is required'
+                packagesTypeValidation:
+                  summary: Invalid type for packages field
+                  value:
+                    error: 'Packages must be an array'
+                scopesTypeValidation:
+                  summary: Invalid type for scopes field
+                  value:
+                    error: 'Scopes must be an array'
+                orgsTypeValidation:
+                  summary: Invalid type for organizations field
+                  value:
+                    error: 'Organizations must be an array'
+                invalidPackagesPermission:
+                  summary: Invalid packages_and_scopes_permission value
+                  value:
+                    error: 'Invalid packages_and_scopes_permission. Must be one of: no-access, read-only, read-write'
+                invalidOrgsPermission:
+                  summary: Invalid orgs_permission value
+                  value:
+                    error: 'Invalid orgs_permission. Must be one of: no-access, read-only, read-write'
+                noScopes:
+                  summary: No packages, scopes, or organizations specified
+                  value:
+                    error: 'You must have at least one package / scope or organization added to this token.'
+                noOrgsWithPermission:
+                  summary: Organization permission set but no organizations specified
+                  value:
+                    error: 'You must select at least one organization if granting organization permissions to this token.'
+                noPackagesOrScopesWithPermission:
+                  summary: Package/scope permission set but no packages or scopes specified
+                  value:
+                    error: 'You must select at least one package or scope if granting package/scopes permissions to this token.'
+                allPermissionsNoAccess:
+                  summary: All permissions set to no-access
+                  value:
+                    error: 'Please select at least one: package, scope or organization.'
+                expirationLimit:
+                  summary: Expiration exceeds maximum for read-write tokens
+                  value:
+                    error: 'Read-write tokens cannot have expiration longer than 90 days'
+        "401":
+          $ref: '#/components/responses/UnauthorizedWithWebAuth'
+
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+    
+    get:
+      tags:
+        - Tokens
+      summary: List npm access tokens
+      description: |
+        List all access tokens associated with the authenticated user's account.
+        
+        **Requirements:**
+        - Must be authenticated with a valid Bearer token
+        
+        **Response includes:**
+        - All responses include security notices via the `npm-notice` header
+        - Tokens are redacted for security: format is `npm_aBcD...7890` (first 8 chars including prefix + ... + last 4 chars)
+        - Supports pagination via query parameters
+      operationId: listTokens
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: |
+            Bearer token for authentication. Must be an npm access token.
+            
+            **Format:** `Bearer <token>`
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number for pagination (0-indexed)
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+          description: Number of tokens to return per page
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          description: "List of tokens retrieved successfully"
+          headers:
+            npm-notice:
+              description: |
+                Security notice regarding token limitations.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  objects:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the token.
+                        description:
+                          type: string
+                          description: The description of the token.
+                          nullable: true
+                        expiry:
+                          type: string
+                          description: The expiration date of the token in ISO 8601 format.
+                        key:
+                          type: string
+                          description: The token ID.
+                        token:
+                          type: string
+                          description: 'Redacted token in format: npm_aBcD...7890 (first 8 chars + ... + last 4 chars)'
+                          example: npm_aBcD...7890
+                        readonly:
+                          type: boolean
+                          description: Indicates if the token has readonly permissions
+                        bypass_2fa:
+                          type: boolean
+                          description: Indicates if the token can bypass 2FA requirements
+                        cidr:
+                          type: array
+                          items:
+                            type: string
+                          description: List of CIDR ranges that can use this token
+                          nullable: true
+                        revoked:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the token was revoked. null for active tokens
+                          nullable: true
+                        created:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the token was created
+                        updated:
+                          type: string
+                          format: date-time
+                          description: Timestamp when the token was last updated
+                        accessed: 
+                          type: string
+                          format: date-time
+                          description: Timestamp when the token was last accessed
+                          nullable: true
+                        permissions:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              name:
+                                type: string
+                                description: Permission name (e.g., "package")
+                              action:
+                                type: string
+                                description: Permission action ("read" or "write")
+                          description: List of permissions granted to this token
+                        scopes:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              type:
+                                type: string
+                                description: Scope type (e.g., "package", "org")
+                              name:
+                                type: string
+                                description: Scope name
+                          description: List of scopes this token has access to
+                  total:
+                    type: integer
+                    description: Total number of tokens
+                  urls:
+                    type: object
+                    description: Pagination URLs for next/previous pages
+                    additionalProperties:
+                      type: string
+        "401":
+          description: Unauthorized - Invalid or missing authentication
+          headers:
+            www-authenticate:
+              description: Authentication challenge if applicable
+              schema:
+                type: string
+            npm-notice:
+              description: Additional notice information
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+  
+  /-/npm/v1/tokens/token/{token}:
+    delete:
+      tags:
+        - Tokens
+      summary: Delete npm access token
+      description: |
+        Delete an npm access token. The token can be specified as:
+        - A UUID (token identifier)
+        - An npm-prefixed token (format: `npm_` followed by 36 alphanumeric characters)
+        
+        **Requirements:**
+        - Must be authenticated with a valid Bearer token
+        - May require 2FA OTP depending on user settings
+        
+        **Web authentication flow:**
+        - When `npm-auth-type=web` and `npm-command=token` headers are present and 2FA is required,
+          returns authentication URLs instead of an error
+      operationId: deleteToken
+      parameters:
+        - name: token
+          in: path
+          required: true
+          schema:
+            type: string
+          description: |
+            The token identifier to delete. Can be:
+            - A UUID (e.g., `12345678-1234-1234-1234-123456789abc`)
+            - An npm token (e.g., `npm_abcdefghijklmnopqrstuvwxyz0123456789`)
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: |
+            Bearer token for authentication. Must be an npm access token.
+            
+            **Format:** `Bearer <token>`
+        - name: npm-otp
+          in: header
+          required: false
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Required if the user has 2FA enabled.
+        - name: npm-auth-type
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [web]
+          description: |
+            Authentication type for web-based flow. When set to "web", enables
+            browser-based authentication flow for WebAuthn users.
+        - name: npm-command
+          in: header
+          required: false
+          schema:
+            type: string
+            enum: [token]
+          description: |
+            Command context for the request. When set to "token", indicates
+            this is a token deletion command.
+      security:
+        - npmSessionToken: []
+      responses:
+        "204":
+          description: Token deleted successfully
+          headers:
+            npm-notice:
+              description: |
+                Security notice regarding token limitations.
+              schema:
+                type: string
+          content: {}
+        "400":
+          description: Bad request - Invalid token format or token not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                invalidToken:
+                  summary: Invalid token format
+                  value:
+                    message: "invalid token"
+                notFound:
+                  summary: Token not found when searching by hash
+                  value:
+                    message: "could not delete token"
+        "401":
+          description: Unauthorized - Invalid authentication or missing OTP
+          headers:
+            www-authenticate:
+              description: Authentication challenge (e.g., "OTP" when OTP is required)
+              schema:
+                type: string
+            npm-notice:
+              description: Additional notice information
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: Error response for missing authentication or OTP
+                    properties:
+                      error:
+                        type: string
+                    required: [error]
+                  - type: object
+                    description: Web authentication flow response
+                    properties:
+                      authUrl:
+                        type: string
+                        format: uri
+                        description: URL to authenticate via web browser
+                      doneUrl:
+                        type: string
+                        format: uri
+                        description: URL to poll for completion of authentication
+                    required: [authUrl, doneUrl]
+              examples:
+                unauthorized:
+                  summary: "No Authorization header provided"
+                  value:
+                    error: "Unauthorized"
+                invalidOtp:
+                  summary: "Invalid OTP provided"
+                  value:
+                    message: "invalid OTP"
+                webAuthFlow:
+                  summary: "Web authentication flow (2FA required)"
+                  description: |
+                    When user has 2FA enabled and includes both `npm-auth-type=web` and `npm-command=token` headers.
+                  value:
+                    authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
+                    doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
+        "404":
+          description: Not found - Token does not exist
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+        "500":
+          description: Internal server error
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+components:
+  responses:
+    UnauthorizedWithWebAuth:
+      description: |
+        Unauthorized - Authentication scenarios based on 2FA status and header presence.
+
+        **Authentication Scenarios:**
+
+        1. **No Authorization header**: Returns generic "Unauthorized" error when no Bearer token is provided or the token is invalid
+        2. **No 2FA enabled + npm-otp header omitted**: Returns error requesting email OTP. An email is automatically sent to the user's registered email address
+        3. **2FA enabled + npm-otp header omitted (legacy flow)**: Returns 2FA error with npm-notice header containing WebAuthn URL. This is for older CLI versions without web auth support
+        4. **2FA enabled + npm-otp header omitted (web auth flow)**: Returns authentication URLs (authUrl and doneUrl) when both npm-auth-type=web and npm-command=token headers are present
+        
+      headers:
+        npm-notice:
+          description: |
+            Notice header sent when 2FA is enabled and web auth headers are not present.
+            Contains URL for WebAuthn security key authentication.
+          schema:
+            type: string
+          example: "Open https://www.npmjs.com/login/<uuid> to use your security key for authentication"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                description: Error response for missing authentication or OTP
+                properties:
+                  error:
+                    type: string
+                required: [error]
+              - type: object
+                description: Web authentication flow response
+                properties:
+                  authUrl:
+                    type: string
+                    format: uri
+                    description: URL to authenticate via web browser
+                  doneUrl:
+                    type: string
+                    format: uri
+                    description: URL to poll for completion of authentication
+                required: [authUrl, doneUrl]
+          examples:
+            unauthorized:
+              summary: "No Authorization header provided"
+              description: |
+                When no Authorization header is provided or the token is invalid.
+              value:
+                error: "Unauthorized"
+            no_2fa_missing_otp:
+              summary: "No 2FA enabled + npm-otp header omitted"
+              description: |
+                When user has no 2FA enabled and omits the `npm-otp` header.
+                
+                An email OTP is automatically sent to the user's registered email address.
+                The user should check their email and retry the request with the received OTP.
+              value:
+                error: "A One Time Password (OTP) by email is required."
+            with_2fa_missing_otp:
+              summary: "2FA enabled + npm-otp header omitted (legacy flow)"
+              description: |
+                When user has 2FA enabled, omits the `npm-otp` header, and doesn't include web auth headers. This is a legacy notice supported in older versions of the CLI without support for `npm-auth-type=web`.
+                
+                **Response includes npm-notice header:**
+
+                > `npm-notice: Open https://www.npmjs.com/login/<uuid> to use your security key for authentication`
+              value:
+                error: "You must provide a one-time pass. Upgrade your client to npm@latest in order to use 2FA."
+            web_auth_flow:
+              summary: "2FA enabled + npm-otp header omitted (web auth flow)"
+              description: |
+                When user has 2FA enabled, omits the `npm-otp` header, and includes both `npm-auth-type=web` and `npm-command=token` headers.
+              value:
+                authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
+                doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
