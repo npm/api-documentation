@@ -7,7 +7,7 @@ paths:
       description: |
         Retrieve all trusted publisher configurations for a package.
         
-        This endpoint allows package maintainers to view all existing trusted publisher
+        This endpoint allows users with write permission to the package to view all existing trusted publisher
         configurations that have been set up for OIDC token exchange for their package.
         
         ## Configuration Structure
@@ -25,8 +25,9 @@ paths:
         
         ## Requirements
         - Package MUST exist
-        - Package maintainer MUST have 2FA enabled on their account
-        - User MUST be authenticated as a package maintainer
+        - User MUST have write permission to the package
+        - MUST have 2FA enabled on their account
+        - User MUST be authenticated
 
       operationId: getTrustedPublishers
       parameters:
@@ -177,14 +178,16 @@ paths:
       description: |
         Configure trusted publisher settings for a package to enable OIDC token exchange.
         
-        This endpoint allows package maintainers to establish trust with CI/CD providers
+        This endpoint allows users with write permission to the package to establish trust with CI/CD providers
         (GitHub Actions, GitLab CI, etc.) so that those services can publish to the package
         without requiring long-lived npm tokens.
         
         ## Requirements
         - Package MUST exist
-        - Package maintainer MUST have 2FA enabled on their account
-        - User MUST be authenticated as a package maintainer
+        - User MUST have write permission to the package
+        - MUST have 2FA enabled on their account
+        - User MUST be authenticated
+
       operationId: configureTrustedPublisher
       parameters:
         - name: package
@@ -381,14 +384,14 @@ paths:
       description: |
         Delete a specific trusted publisher configuration for a package by its UUID.
         
-        This endpoint allows package maintainers to remove an existing trusted publisher
+        This endpoint allows users with write permission to the package to remove an existing trusted publisher
         configuration that was previously set up for OIDC token exchange.
         
         ## Requirements
         - Package MUST exist
-        - Package maintainer MUST have 2FA enabled on their account
-        - User MUST be authenticated as a package maintainer
-        - Configuration MUST exist and belong to the package
+        - User MUST have write permission to the package
+        - MUST have 2FA enabled on their account
+        - User MUST be authenticated
 
       operationId: deleteTrustedPublisher
       parameters:
