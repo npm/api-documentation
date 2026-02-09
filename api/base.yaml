@@ -74,6 +74,11 @@ tags:
     description: |
       OpenID Connect (OIDC) token exchange endpoints for CI/CD integrations.
 
+  - name: Trust
+    x-displayName: Trust
+    description: |
+      Trust-related endpoints for managing package trust and security settings.
+
 x-tagGroups:
   - name: Introduction
     tags:
@@ -81,10 +86,11 @@ x-tagGroups:
   - name: Authentication & Authorization
     tags:
       - Authentication
-  - name: registry.npmjs.org API Endpoints
+  - name: Sections
     tags:
       - Tokens
       - OIDC
+      - Trust
 
 components:
   securitySchemes:
@@ -116,6 +122,15 @@ components:
       description: |
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
+    
+    # Alias for npmAccessToken - for backward compatibility
+    granularAccessToken:
+      type: http
+      scheme: bearer
+      description: |
+        Granular Access Token (GAT) with fine-grained permissions.
+        These tokens can be scoped to specific packages and operations.
+        (Alias for npmAccessToken)
     
     # Short-lived tokens obtained from OIDC token exchange
     oidcExchangeToken:

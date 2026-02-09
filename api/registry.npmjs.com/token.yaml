@@ -578,7 +578,7 @@ paths:
                 invalidOtp:
                   summary: "Invalid OTP provided"
                   value:
-                    message: "invalid OTP"
+                    error: "invalid OTP"
                 webAuthFlow:
                   summary: "Web authentication flow (2FA required)"
                   description: |

@@ -2,5 +2,6 @@ inputs:
   - inputFile: base.yaml
   - inputFile: registry.npmjs.com/oidc.yaml
   - inputFile: registry.npmjs.com/token.yaml
+  - inputFile: registry.npmjs.com/trust.yaml
 
 output: ../openapi.yaml

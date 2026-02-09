@@ -1,0 +1,704 @@
+paths:
+  /-/package/{package}/trust:
+    get:
+      tags:
+        - Trust
+      summary: Get all trusted publisher configurations for package
+      description: |
+        Retrieve all trusted publisher configurations for a package.
+        
+        This endpoint allows package maintainers to view all existing trusted publisher
+        configurations that have been set up for OIDC token exchange for their package.
+        
+        ## Configuration Structure
+        
+        The structure of the payload follows a specific design. Each trusted provider has their own unique set of claims. 
+        In order to keep things clear and consistent, the properties to create a provider match the claims structure. 
+        The caveat is when a claim requires partial matching through parsing. 
+
+        - All configurations MUST include a `type` and `claims` object
+        - Top-level "claims" MUST match the cloud provider's exact claim properties
+        - Claims MAY use exact string matching when supported
+        - Claims MAY use an object structure to define one or multiple partial matching rules
+        - Partial matching properties MUST be defined and documented by this API specification
+        - This documentation SHALL only provide matches for specifically defined claim items
+        
+        ## Requirements
+        - Package MUST exist
+        - Package maintainer MUST have 2FA enabled on their account
+        - User MUST be authenticated as a package maintainer
+
+      operationId: getTrustedPublishers
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Name of the npm package, url-encoded
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: |
+            Authentication header. Supports both Bearer authentication.
+            
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+            
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: npm-otp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Always required for this endpoint.
+
+            When not provided for users with 2FA enabled, the API responds with 2FA polling payload.
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "200":
+          description: "Trusted publisher configurations retrieved successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcConfigs'
+              examples:
+                empty:
+                  summary: No configurations
+                  value: []
+                github:
+                  summary: GitHub Actions configuration
+                  value:
+                    - id: "12345678-1234-1234-1234-123456789abc"
+                      type: "github_actions"
+                      claims:
+                        repository: "my-org/my-package"
+                        workflow_ref:
+                          file: "publish.yml"
+                        environment: "production"
+                gitlab:
+                  summary: GitLab CI configuration
+                  value:
+                    - id: "87654321-4321-4321-4321-abcdef123456"
+                      type: "gitlab_pipelines"
+                      claims:
+                        project_path: "my-group/my-package"
+                        ci_config_ref_uri:
+                          file: ".gitlab-ci.yml"
+                        environment: "production"
+        "401":
+          description: Unauthorized - missing or invalid authentication / OTP
+          headers:
+            npm-notice:
+              description: |
+                Notice header sent when 2FA is enabled and web auth headers are not present.
+                Contains URL for WebAuthn security key authentication.
+              schema:
+                type: string
+              example: "Open https://www.npmjs.com/login/<uuid> to use your security key for authentication"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: Error response for missing authentication or OTP
+                    properties:
+                      message:
+                        type: string
+                  - type: object
+                    description: Web authentication flow response
+                    properties:
+                      authUrl:
+                        type: string
+                        format: uri
+                        description: URL to authenticate via web browser
+                      doneUrl:
+                        type: string
+                        format: uri
+                        description: URL to poll for completion of authentication
+                    required: [authUrl, doneUrl]
+              examples:
+                unauthorized:
+                  summary: "No Authorization header provided"
+                  description: |
+                    When no Authorization header is provided or the token is invalid.
+                  value:
+                    message: "Unauthorized"
+                web_auth_flow:
+                  summary: "2FA enabled + npm-otp header omitted (web auth flow)"
+                  description: |
+                    When user has 2FA enabled, omits the `npm-otp` header, and includes both `npm-auth-type=web` and `npm-command=trust` headers.
+                  value:
+                    authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
+                    doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
+        "403":
+          description: 2fa required or insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                2fa_disabled:
+                  summary: "Please enable 2fa for your account"
+                  value: 
+                    message: "Please enable 2fa for your account"
+                insufficient_permissions:
+                  summary: "Insufficient permissions to view configurations"
+                  value: 
+                    message: "Insufficient permissions to access trusted publisher configurations for this package"
+        "404":
+          description: Package not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                package_not_found:
+                  summary: "Package not found"
+                  value: 
+                    message: "Package not found"
+    post:
+      tags:
+        - Trust
+      summary: Add trusted publisher configuration for package
+      description: |
+        Configure trusted publisher settings for a package to enable OIDC token exchange.
+        
+        This endpoint allows package maintainers to establish trust with CI/CD providers
+        (GitHub Actions, GitLab CI, etc.) so that those services can publish to the package
+        without requiring long-lived npm tokens.
+        
+        ## Requirements
+        - Package MUST exist
+        - Package maintainer MUST have 2FA enabled on their account
+        - User MUST be authenticated as a package maintainer
+      operationId: configureTrustedPublisher
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Name of the npm package, url-encoded
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: |
+            Authentication header. Supports both Bearer authentication.
+            
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+            
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: npm-otp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Always required for this endpoint.
+
+            When not provided for users with 2FA enabled, the API responds with 2FA polling payload.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OidcConfigsCreate'
+            examples:
+              github:
+                summary: GitHub Actions configuration array
+                value:
+                  - type: "github_actions"
+                    claims:
+                      repository: "my-org/my-package"
+                      workflow_ref:
+                        file: "publish.yml"
+                      environment: "production"
+              gitlab:
+                summary: GitLab CI configuration array
+                value:
+                  - type: "gitlab_pipelines"
+                    claims:
+                      project_path: "my-group/my-package"
+                      ci_config_ref_uri:
+                        file: ".gitlab-ci.yml"
+                      environment: "production"
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "200":
+          description: "Trusted publisher configuration created successfully"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OidcConfigs'
+              examples:
+                github:
+                  summary: GitHub Actions configuration response
+                  value:
+                    - id: "12345678-1234-1234-1234-123456789abc"
+                      type: "github_actions"
+                      claims:
+                        repository: "my-org/my-package"
+                        workflow_ref:
+                          file: "publish.yml"
+                        environment: "production"
+                gitlab:
+                  summary: GitLab CI configuration response
+                  value:
+                    - id: "87654321-4321-4321-4321-abcdef123456"
+                      type: "gitlab_pipelines"
+                      claims:
+                        project_path: "my-group/my-package"
+                        ci_config_ref_uri:
+                          file: ".gitlab-ci.yml"
+                        environment: "production"
+        "400":
+          description: Bad request body
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                invalid_config:
+                  summary: "Invalid trusted publisher configuration"
+                  value: 
+                    message: "Invalid trusted publisher configuration"
+        "401":
+          description: Unauthorized - missing or invalid authentication / OTP
+          headers:
+            npm-notice:
+              description: |
+                Notice header sent when 2FA is enabled and web auth headers are not present.
+                Contains URL for WebAuthn security key authentication.
+              schema:
+                type: string
+              example: "Open https://www.npmjs.com/login/<uuid> to use your security key for authentication"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: Error response for missing authentication or OTP
+                    properties:
+                      message:
+                        type: string
+                  - type: object
+                    description: Web authentication flow response
+                    properties:
+                      authUrl:
+                        type: string
+                        format: uri
+                        description: URL to authenticate via web browser
+                      doneUrl:
+                        type: string
+                        format: uri
+                        description: URL to poll for completion of authentication
+                    required: [authUrl, doneUrl]
+              examples:
+                unauthorized:
+                  summary: "No Authorization header provided"
+                  description: |
+                    When no Authorization header is provided or the token is invalid.
+                  value: 
+                    message: "Unauthorized"
+                web_auth_flow:
+                  summary: "2FA enabled + npm-otp header omitted (web auth flow)"
+                  description: |
+                    When user has 2FA enabled, omits the `npm-otp` header, and includes both `npm-auth-type=web` and `npm-command=trust` headers.
+                  value:
+                    authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
+                    doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
+        "403":
+          description: 2fa required
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                2fa_disabled:
+                  summary: "Please enable 2fa for your account"
+                  value: 
+                    message: "Please enable 2fa for your account"
+        "404":
+          description: Package not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                package_not_found:
+                  summary: "Package not found"
+                  value: 
+                    message: "Package not found"
+        "409":
+          description: Conflict - Configuration limit reached
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                config_limit_reached:
+                  summary: "Configuration limit reached"
+                  value: 
+                    message: "trusted publisher config already exists for the package. Please delete and re-create."
+  /-/package/{package}/trust/{config-uuid}:
+    delete:
+      tags:
+        - Trust
+      summary: Delete trusted publisher configuration
+      description: |
+        Delete a specific trusted publisher configuration for a package by its UUID.
+        
+        This endpoint allows package maintainers to remove an existing trusted publisher
+        configuration that was previously set up for OIDC token exchange.
+        
+        ## Requirements
+        - Package MUST exist
+        - Package maintainer MUST have 2FA enabled on their account
+        - User MUST be authenticated as a package maintainer
+        - Configuration MUST exist and belong to the package
+
+      operationId: deleteTrustedPublisher
+      parameters:
+        - name: package
+          in: path
+          required: true
+          schema:
+            type: string
+          description: Name of the npm package, url-encoded
+        - name: config-uuid
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: UUID of the trusted publisher configuration to delete
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: '^Bearer .+'
+          description: |
+            Authentication header. Supports both Bearer authentication.
+            
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+            
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: npm-otp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Always required for this endpoint.
+
+            When not provided for users with 2FA enabled, the API responds with 2FA polling payload.
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "204":
+          description: "Trusted publisher configuration deleted successfully"
+          content: {}
+        "400":
+          description: Bad request
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                invalid_uuid:
+                  summary: "Invalid UUID format"
+                  value: 
+                    message: "Invalid trusted publisher config id format"
+        "401":
+          description: Unauthorized - missing or invalid authentication / OTP
+          headers:
+            npm-notice:
+              description: |
+                Notice header sent when 2FA is enabled and web auth headers are not present.
+                Contains URL for WebAuthn security key authentication.
+              schema:
+                type: string
+              example: "Open https://www.npmjs.com/login/<uuid> to use your security key for authentication"
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - type: object
+                    description: Error response for missing authentication or OTP
+                    properties:
+                      message:
+                        type: string
+                  - type: object
+                    description: Web authentication flow response
+                    properties:
+                      authUrl:
+                        type: string
+                        format: uri
+                        description: URL to authenticate via web browser
+                      doneUrl:
+                        type: string
+                        format: uri
+                        description: URL to poll for completion of authentication
+                    required: [authUrl, doneUrl]
+              examples:
+                unauthorized:
+                  summary: "No Authorization header provided"
+                  description: |
+                    When no Authorization header is provided or the token is invalid.
+                  value: 
+                    message: "Unauthorized"
+                web_auth_flow:
+                  summary: "2FA enabled + npm-otp header omitted (web auth flow)"
+                  description: |
+                    When user has 2FA enabled, omits the `npm-otp` header, and includes both `npm-auth-type=web` and `npm-command=trust` headers.
+                  value:
+                    authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
+                    doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
+        "403":
+          description: 2fa required or insufficient permissions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                2fa_disabled:
+                  summary: "Please enable 2fa for your account"
+                  value: 
+                    message: "Please enable 2fa for your account"
+                insufficient_permissions:
+                  summary: "Insufficient permissions to delete configuration"
+                  value: 
+                    message: "Insufficient permissions to access trusted publisher config for the package"
+        "404":
+          description: Package or configuration not found
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                package_not_found:
+                  summary: "Package not found"
+                  value: 
+                    message: "Package not found"
+                config_not_found:
+                  summary: "Configuration not found"
+                  value: 
+                    message: "Trusted publisher configuration not found for the package"
+
+components:
+  schemas:
+    OidcConfigs:
+      type: array
+      description: Array of OIDC trusted publisher configurations
+      items:
+        oneOf:
+          - $ref: '#/components/schemas/GitHubActionsConfig'
+          - $ref: '#/components/schemas/GitLabPipelinesConfig'
+    
+    OidcConfigsCreate:
+      type: array
+      description: Array of OIDC trusted publisher configurations to create
+      items:
+        oneOf:
+          - $ref: '#/components/schemas/GitHubActionsConfigCreate'
+          - $ref: '#/components/schemas/GitLabPipelinesConfigCreate'
+    
+    GitHubActionsConfig:
+      type: object
+      required:
+        - id
+        - type
+        - claims
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the configuration
+        type:
+          type: string
+          enum:
+            - github_actions
+          description: Type of the trusted publisher
+        claims:
+          type: object
+          required:
+            - repository
+          properties:
+            repository:
+              type: string
+              description: GitHub repository in format 'owner/repo'
+              example: my-org/my-package
+            workflow_ref:
+              oneOf:
+                - type: string
+                  description: Exact workflow reference
+                - type: object
+                  description: Partial workflow reference match
+                  properties:
+                    file:
+                      type: string
+                      description: Workflow file name (e.g., 'publish.yml')
+              description: Reference to the GitHub Actions workflow
+            environment:
+              type: string
+              description: GitHub environment name
+              example: production
+    
+    GitHubActionsConfigCreate:
+      type: object
+      required:
+        - type
+        - claims
+      properties:
+        type:
+          type: string
+          enum:
+            - github_actions
+          description: Type of the trusted publisher
+        claims:
+          type: object
+          required:
+            - repository
+          properties:
+            repository:
+              type: string
+              description: GitHub repository in format 'owner/repo'
+              example: my-org/my-package
+            workflow_ref:
+              oneOf:
+                - type: string
+                  description: Exact workflow reference
+                - type: object
+                  description: Partial workflow reference match
+                  properties:
+                    file:
+                      type: string
+                      description: Workflow file name (e.g., 'publish.yml')
+              description: Reference to the GitHub Actions workflow
+            environment:
+              type: string
+              description: GitHub environment name
+              example: production
+    
+    GitLabPipelinesConfig:
+      type: object
+      required:
+        - id
+        - type
+        - claims
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the configuration
+        type:
+          type: string
+          enum:
+            - gitlab_pipelines
+          description: Type of the trusted publisher
+        claims:
+          type: object
+          required:
+            - project_path
+          properties:
+            project_path:
+              type: string
+              description: GitLab project path in format 'group/project'
+              example: my-group/my-package
+            ci_config_ref_uri:
+              oneOf:
+                - type: string
+                  description: Exact CI config reference
+                - type: object
+                  description: Partial CI config reference match
+                  properties:
+                    file:
+                      type: string
+                      description: CI configuration file name (e.g., '.gitlab-ci.yml')
+              description: Reference to the GitLab CI configuration
+            environment:
+              type: string
+              description: GitLab environment name
+              example: production
+    
+    GitLabPipelinesConfigCreate:
+      type: object
+      required:
+        - type
+        - claims
+      properties:
+        type:
+          type: string
+          enum:
+            - gitlab_pipelines
+          description: Type of the trusted publisher
+        claims:
+          type: object
+          required:
+            - project_path
+          properties:
+            project_path:
+              type: string
+              description: GitLab project path in format 'group/project'
+              example: my-group/my-package
+            ci_config_ref_uri:
+              oneOf:
+                - type: string
+                  description: Exact CI config reference
+                - type: object
+                  description: Partial CI config reference match
+                  properties:
+                    file:
+                      type: string
+                      description: CI configuration file name (e.g., '.gitlab-ci.yml')
+              description: Reference to the GitLab CI configuration
+            environment:
+              type: string
+              description: GitLab environment name
+              example: production
