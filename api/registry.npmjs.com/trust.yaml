@@ -363,7 +363,7 @@ paths:
                   value: 
                     message: "Package not found"
         "409":
-          description: Conflict - Configuration limit reached
+          description: Conflict - Configuration already exists
           content:
             application/json:
               schema:
