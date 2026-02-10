@@ -373,7 +373,7 @@ paths:
                     type: string
               examples:
                 config_limit_reached:
-                  summary: "Configuration limit reached"
+                  summary: "Config already exists"
                   value: 
                     message: "trusted publisher config already exists for the package. Please delete and re-create."
   /-/package/{package}/trust/{config-uuid}:
