@@ -78,7 +78,7 @@ paths:
                   summary: GitHub Actions configuration
                   value:
                     - id: "12345678-1234-1234-1234-123456789abc"
-                      type: "github_actions"
+                      type: "github"
                       claims:
                         repository: "my-org/my-package"
                         workflow_ref:
@@ -88,7 +88,7 @@ paths:
                   summary: GitLab CI configuration
                   value:
                     - id: "87654321-4321-4321-4321-abcdef123456"
-                      type: "gitlab_pipelines"
+                      type: "gitlab"
                       claims:
                         project_path: "my-group/my-package"
                         ci_config_ref_uri:
@@ -229,7 +229,7 @@ paths:
               github:
                 summary: GitHub Actions configuration array
                 value:
-                  - type: "github_actions"
+                  - type: "github"
                     claims:
                       repository: "my-org/my-package"
                       workflow_ref:
@@ -238,7 +238,7 @@ paths:
               gitlab:
                 summary: GitLab CI configuration array
                 value:
-                  - type: "gitlab_pipelines"
+                  - type: "gitlab"
                     claims:
                       project_path: "my-group/my-package"
                       ci_config_ref_uri:
@@ -259,7 +259,7 @@ paths:
                   summary: GitHub Actions configuration response
                   value:
                     - id: "12345678-1234-1234-1234-123456789abc"
-                      type: "github_actions"
+                      type: "github"
                       claims:
                         repository: "my-org/my-package"
                         workflow_ref:
@@ -269,7 +269,7 @@ paths:
                   summary: GitLab CI configuration response
                   value:
                     - id: "87654321-4321-4321-4321-abcdef123456"
-                      type: "gitlab_pipelines"
+                      type: "gitlab"
                       claims:
                         project_path: "my-group/my-package"
                         ci_config_ref_uri:
@@ -566,7 +566,7 @@ components:
         type:
           type: string
           enum:
-            - github_actions
+            - github
           description: Type of the trusted publisher
         claims:
           type: object
@@ -602,7 +602,7 @@ components:
         type:
           type: string
           enum:
-            - github_actions
+            - github
           description: Type of the trusted publisher
         claims:
           type: object
@@ -643,7 +643,7 @@ components:
         type:
           type: string
           enum:
-            - gitlab_pipelines
+            - gitlab
           description: Type of the trusted publisher
         claims:
           type: object
@@ -679,7 +679,7 @@ components:
         type:
           type: string
           enum:
-            - gitlab_pipelines
+            - gitlab
           description: Type of the trusted publisher
         claims:
           type: object
