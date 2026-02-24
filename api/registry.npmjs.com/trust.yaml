@@ -94,6 +94,18 @@ paths:
                         ci_config_ref_uri:
                           file: ".gitlab-ci.yml"
                         environment: "production"
+                circleci:
+                  summary: CircleCI configuration
+                  value:
+                    - id: "e792f093-7302-4330-8d50-27d7acddc87e"
+                      type: "circleci"
+                      claims:
+                        oidc.circleci.com/org-id: "94b40e60-cfd5-486f-a04b-507abf27a83d"
+                        oidc.circleci.com/project-id: "ff4d0d0d-5033-48c5-81e6-7c14a4715837"
+                        oidc.circleci.com/pipeline-definition-id: "c959a6e7-5b83-4bc1-b46f-37bf13513490"
+                        oidc.circleci.com/context-ids:
+                          - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                        oidc.circleci.com/vcs-origin: "github.com/myorg/myrepo"
         "401":
           description: Unauthorized - missing or invalid authentication / OTP
           headers:
@@ -179,7 +191,7 @@ paths:
         Configure trusted publisher settings for a package to enable OIDC token exchange.
         
         This endpoint allows users with write permission to the package to establish trust with CI/CD providers
-        (GitHub Actions, GitLab CI, etc.) so that those services can publish to the package
+        (GitHub Actions, GitLab CI, CircleCI, etc.) so that those services can publish to the package
         without requiring long-lived npm tokens.
         
         ## Requirements
@@ -244,6 +256,17 @@ paths:
                       ci_config_ref_uri:
                         file: ".gitlab-ci.yml"
                       environment: "production"
+              circleci:
+                summary: CircleCI configuration array
+                value:
+                  - type: "circleci"
+                    claims:
+                      oidc.circleci.com/org-id: "94b40e60-cfd5-486f-a04b-507abf27a83d"
+                      oidc.circleci.com/project-id: "ff4d0d0d-5033-48c5-81e6-7c14a4715837"
+                      oidc.circleci.com/pipeline-definition-id: "c959a6e7-5b83-4bc1-b46f-37bf13513490"
+                      oidc.circleci.com/context-ids:
+                        - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                      oidc.circleci.com/vcs-origin: "github.com/myorg/myrepo"
       security:
         - npmAccessToken: []
         - granularAccessToken: []
@@ -275,6 +298,18 @@ paths:
                         ci_config_ref_uri:
                           file: ".gitlab-ci.yml"
                         environment: "production"
+                circleci:
+                  summary: CircleCI configuration response
+                  value:
+                    - id: "e792f093-7302-4330-8d50-27d7acddc87e"
+                      type: "circleci"
+                      claims:
+                        oidc.circleci.com/org-id: "94b40e60-cfd5-486f-a04b-507abf27a83d"
+                        oidc.circleci.com/project-id: "ff4d0d0d-5033-48c5-81e6-7c14a4715837"
+                        oidc.circleci.com/pipeline-definition-id: "c959a6e7-5b83-4bc1-b46f-37bf13513490"
+                        oidc.circleci.com/context-ids:
+                          - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+                        oidc.circleci.com/vcs-origin: "github.com/myorg/myrepo"
         "400":
           description: Bad request body
           content:
@@ -543,6 +578,7 @@ components:
         oneOf:
           - $ref: '#/components/schemas/GitHubActionsConfig'
           - $ref: '#/components/schemas/GitLabPipelinesConfig'
+          - $ref: '#/components/schemas/CircleCIConfig'
     
     OidcConfigsCreate:
       type: array
@@ -551,6 +587,7 @@ components:
         oneOf:
           - $ref: '#/components/schemas/GitHubActionsConfigCreate'
           - $ref: '#/components/schemas/GitLabPipelinesConfigCreate'
+          - $ref: '#/components/schemas/CircleCIConfigCreate'
     
     GitHubActionsConfig:
       type: object
@@ -670,6 +707,59 @@ components:
               description: GitLab environment name
               example: production
     
+    CircleCIConfig:
+      type: object
+      required:
+        - id
+        - type
+        - claims
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the configuration
+        type:
+          type: string
+          enum:
+            - circleci
+          description: Type of the trusted publisher
+        claims:
+          type: object
+          required:
+            - oidc.circleci.com/org-id
+            - oidc.circleci.com/project-id
+            - oidc.circleci.com/pipeline-definition-id
+            - oidc.circleci.com/vcs-origin
+          properties:
+            oidc.circleci.com/org-id:
+              type: string
+              format: uuid
+              description: The UUID of the CircleCI organization
+              example: "94b40e60-cfd5-486f-a04b-507abf27a83d"
+            oidc.circleci.com/project-id:
+              type: string
+              format: uuid
+              description: The UUID of the CircleCI project
+              example: "ff4d0d0d-5033-48c5-81e6-7c14a4715837"
+            oidc.circleci.com/pipeline-definition-id:
+              type: string
+              format: uuid
+              description: The UUID of the pipeline definition Id
+              example: "c959a6e7-5b83-4bc1-b46f-37bf13513490"
+            oidc.circleci.com/context-ids:
+              type: array
+              items:
+                type: string
+                format: uuid
+              description: Optional array of CircleCI context UUIDs.
+              example:
+                - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            oidc.circleci.com/vcs-origin:
+              type: string
+              description: |
+                The origin repository where the CI job runs, in the format `<vcs-provider>/<org>/<repo>`.
+              example: "github.com/myorg/myrepo"
+
     GitLabPipelinesConfigCreate:
       type: object
       required:
@@ -705,3 +795,51 @@ components:
               type: string
               description: GitLab environment name
               example: production
+
+    CircleCIConfigCreate:
+      type: object
+      required:
+        - type
+        - claims
+      properties:
+        type:
+          type: string
+          enum:
+            - circleci
+          description: Type of the trusted publisher
+        claims:
+          type: object
+          required:
+            - oidc.circleci.com/org-id
+            - oidc.circleci.com/project-id
+            - oidc.circleci.com/pipeline-definition-id
+            - oidc.circleci.com/vcs-origin
+          properties:
+            oidc.circleci.com/org-id:
+              type: string
+              format: uuid
+              description: The UUID of the CircleCI organization
+              example: "94b40e60-cfd5-486f-a04b-507abf27a83d"
+            oidc.circleci.com/project-id:
+              type: string
+              format: uuid
+              description: The UUID of the CircleCI project
+              example: "ff4d0d0d-5033-48c5-81e6-7c14a4715837"
+            oidc.circleci.com/pipeline-definition-id:
+              type: string
+              format: uuid
+              description: The UUID of the pipeline definition Id
+              example: "c959a6e7-5b83-4bc1-b46f-37bf13513490"
+            oidc.circleci.com/context-ids:
+              type: array
+              items:
+                type: string
+                format: uuid
+              description: Optional array of CircleCI context UUIDs.
+              example:
+                - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+            oidc.circleci.com/vcs-origin:
+              type: string
+              description: |
+                The origin repository where the CI job runs, in the format `<vcs-provider>/<org>/<repo>`.
+              example: "github.com/myorg/myrepo"
