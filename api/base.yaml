@@ -43,7 +43,7 @@ tags:
 
       **3. OIDC id_token (`oidcIdToken`)**  
       Tokens from supported Identity Providers (CI/CD systems):
-      - From GitHub Actions, GitLab CI, etc.
+      - From GitHub Actions, GitLab CI, CircleCI, etc.
       - Must have `aud` claim set to `npm:registry.npmjs.org`
       - Short-lived tokens
       - **Required for:** OIDC token exchange only
@@ -100,12 +100,13 @@ components:
       scheme: bearer
       bearerFormat: JWT
       description: |
-        OIDC id_token from a supported Identity Provider (IdP) such as GitHub Actions or GitLab CI.
+        OIDC id_token from a supported Identity Provider (IdP) such as GitHub Actions, GitLab CI, or CircleCI.
         The `aud` (audience) claim must be set to `npm:registry.npmjs.org`.
         
         **Supported Identity Providers:**
         - GitHub Actions
         - GitLab CI
+        - CircleCI
     
     # Traditional npm user access tokens
     npmSessionToken:
