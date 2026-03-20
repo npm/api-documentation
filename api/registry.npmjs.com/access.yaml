@@ -1,0 +1,218 @@
+components:
+  parameters:
+    OrgName:
+      name: orgName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Name of an org
+    PackageName:
+      name: escapedPackageName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of a package.  Scoped packages need their "/" to be url encoded to "%2F"
+      example: "@npmcli%2Farborist"
+    TeamName:
+      name: teamName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Name of a team
+  responses:
+    PackageAccessLevels:
+      description: "Packages with their access levels"
+      content:
+        epplication/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+            example:
+              "@npmcli/arborist": "read-write"
+              "@npmcli/config": "read-only"
+    PackageVisibility:
+      description: "Packages with their visibility"
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+            example:
+              "@npmcli/arborist": "public"
+              "@npmcli/hidden": "private"
+    UserAccessLevels:
+      description: "User access levels"
+      content:
+        epplication/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+            example:
+              "npm": "read-write"
+              "microsoft": "read-only"
+    Unauthorized:
+      description: "Unauthorized"
+      headers:
+        www-authenticate:
+          description: Authentication challenge (e.g., "OTP" when OTP is required)
+          schema:
+            type: string
+        npm-notice:
+          description: Additional notice information
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
+paths:
+  /-/team/{orgName}/{teamName}/package:
+    parameters:
+      - $ref: '#/components/parameters/OrgName'
+      - $ref: '#/components/parameters/TeamName'
+      - $ref: "./api/shared-components.yaml#/components/parameters/RequiredBearerToken"
+    get:
+      tags:
+        - Access
+      summary: Get all packages for a team
+      description: Get all of the packages a team has access to, as well a the access level that team has for each package.
+      operationId: getTeamPackageGrants
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageAccessLevels'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Access
+      summary: Grant access to a package for a team
+      operationId: createTeamPackageGrant
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                package:
+                  type: string
+                  description: The name of the package to give access to
+                permissions:
+                  type: string
+                  enum:
+                    - read-only
+                    - read-write
+                  description: The access level of the package to grant to the team
+      security:
+        - npmSessionToken: []
+      responses:
+        "201":
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+    delete:
+      summary: Remove access to a package for a team
+      operationId: deleteTeamPackageGrant
+      security:
+        - npmSessionToken: []
+      responses:
+        "204":
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+  /-/org/{orgName}/package:
+    parameters:
+      - $ref: "#/components/parameters/OrgName"
+      - $ref: "./api/shared-components.yaml#/components/parameters/RequiredBearerToken"
+    get:
+      tags:
+        - Access
+      summary: Get all packages for an org
+      description: Get all of the packages an org has access to, as well a the access level that org has for each pacakge.
+      operationId: getOrgPackages
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageAccessLevels'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+  /-/package/{escapedPackageName}/collaborators:
+    parameters:
+      - $ref: '#/components/parameters/PackageName'
+      - $ref: "./api/shared-components.yaml#/components/parameters/RequiredBearerToken"
+    get:
+      tags:
+        - Access
+      summary: Get all of the users that have access to a package, as well as the access level that user has for each package.
+      operationId: getPackageCollaborators
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          $ref: '#/components/responses/UserAccessLevels'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+  /-/package/{escapedPackageName}/visibility:
+    parameters:
+      - $ref: '#/components/parameters/PackageName'
+      - $ref: "./api/shared-components.yaml#/components/parameters/RequiredBearerToken"
+    get:
+      tags:
+        - Access
+      summary: Get the visibility of a package.
+      operationId: getPackageVisibility
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          $ref: '#/components/responses/PackageVisibility'
+        "401":
+          $ref: '#/components/responses/Unauthorized'
+  /-/package/{escapedPackageName}/access:
+    post:
+      tags:
+        - Access
+      summary: Sets the various access levels for a package.
+      operationId: setPackageAccess
+      parameters:
+        - $ref: '#/components/parameters/PackageName'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                # cidr_whitelist?
+                access:
+                  type: string
+                  enum:
+                    - public
+                    - private
+                  description: Visibility of a package
+                publish_requires_tfa:
+                  type: boolean
+                  description: Whether publishing this package requires multifactor auth
+                automation_token_overrides_tfa:
+                  type: boolean
+                  description: Whether or not automation tokens override the requirement for multifactor auth
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        "401":
+          $ref: '#/components/responses/Unauthorized'

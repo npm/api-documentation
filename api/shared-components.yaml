@@ -1,0 +1,24 @@
+components:
+  parameters:
+    RequiredBearerToken:
+      name: Authorization
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: '^Bearer .+'
+      description: |
+        Bearer token for authentication. Must be an npm access token.
+
+        **Format:** `Bearer <token>`
+
+        **Accepted token types:**
+        - npm access token (traditional user token created via `npm login`)
+  responses:
+    EmptySuccess:
+      description: "Success"
+      content:
+        "*/*":
+          schema:
+            not:
+              {}

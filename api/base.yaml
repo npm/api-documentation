@@ -91,6 +91,7 @@ x-tagGroups:
       - Tokens
       - OIDC
       - Trust
+      - Access
 
 components:
   securitySchemes:
