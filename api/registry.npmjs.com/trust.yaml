@@ -6,15 +6,15 @@ paths:
       summary: Get all trusted publisher configurations for package
       description: |
         Retrieve all trusted publisher configurations for a package.
-        
+
         This endpoint allows users with write permission to the package to view all existing trusted publisher
         configurations that have been set up for OIDC token exchange for their package.
-        
+
         ## Configuration Structure
-        
-        The structure of the payload follows a specific design. Each trusted provider has their own unique set of claims. 
-        In order to keep things clear and consistent, the properties to create a provider match the claims structure. 
-        The caveat is when a claim requires partial matching through parsing. 
+
+        The structure of the payload follows a specific design. Each trusted provider has their own unique set of claims.
+        In order to keep things clear and consistent, the properties to create a provider match the claims structure.
+        The caveat is when a claim requires partial matching through parsing.
 
         - All configurations MUST include a `type` and `claims` object
         - Top-level "claims" MUST match the cloud provider's exact claim properties
@@ -22,7 +22,7 @@ paths:
         - Claims MAY use an object structure to define one or multiple partial matching rules
         - Partial matching properties MUST be defined and documented by this API specification
         - This documentation SHALL only provide matches for specifically defined claim items
-        
+
         ## Requirements
         - Package MUST exist
         - User MUST have write permission to the package
@@ -45,10 +45,10 @@ paths:
             pattern: '^Bearer .+'
           description: |
             Authentication header. Supports both Bearer authentication.
-            
+
             **Formats:**
             - `Bearer <token>` - npm access token or granular access token
-            
+
             **Accepted token types:**
             - npm access token (traditional user token)
         - name: npm-otp
@@ -163,11 +163,11 @@ paths:
               examples:
                 2fa_disabled:
                   summary: "Please enable 2fa for your account"
-                  value: 
+                  value:
                     message: "Please enable 2fa for your account"
                 insufficient_permissions:
                   summary: "Insufficient permissions to view configurations"
-                  value: 
+                  value:
                     message: "Insufficient permissions to access trusted publisher configurations for this package"
         "404":
           description: Package not found
@@ -181,7 +181,7 @@ paths:
               examples:
                 package_not_found:
                   summary: "Package not found"
-                  value: 
+                  value:
                     message: "Package not found"
     post:
       tags:
@@ -189,11 +189,11 @@ paths:
       summary: Add trusted publisher configuration for package
       description: |
         Configure trusted publisher settings for a package to enable OIDC token exchange.
-        
+
         This endpoint allows users with write permission to the package to establish trust with CI/CD providers
         (GitHub Actions, GitLab CI, CircleCI, etc.) so that those services can publish to the package
         without requiring long-lived npm tokens.
-        
+
         ## Requirements
         - Package MUST exist
         - User MUST have write permission to the package
@@ -216,10 +216,10 @@ paths:
             pattern: '^Bearer .+'
           description: |
             Authentication header. Supports both Bearer authentication.
-            
+
             **Formats:**
             - `Bearer <token>` - npm access token or granular access token
-            
+
             **Accepted token types:**
             - npm access token (traditional user token)
         - name: npm-otp
@@ -322,7 +322,7 @@ paths:
               examples:
                 invalid_config:
                   summary: "Invalid trusted publisher configuration"
-                  value: 
+                  value:
                     message: "Invalid trusted publisher configuration"
         "401":
           description: Unauthorized - missing or invalid authentication / OTP
@@ -360,7 +360,7 @@ paths:
                   summary: "No Authorization header provided"
                   description: |
                     When no Authorization header is provided or the token is invalid.
-                  value: 
+                  value:
                     message: "Unauthorized"
                 web_auth_flow:
                   summary: "2FA enabled + npm-otp header omitted (web auth flow)"
@@ -381,7 +381,7 @@ paths:
               examples:
                 2fa_disabled:
                   summary: "Please enable 2fa for your account"
-                  value: 
+                  value:
                     message: "Please enable 2fa for your account"
         "404":
           description: Package not found
@@ -395,7 +395,7 @@ paths:
               examples:
                 package_not_found:
                   summary: "Package not found"
-                  value: 
+                  value:
                     message: "Package not found"
         "409":
           description: Conflict - Configuration already exists
@@ -409,7 +409,7 @@ paths:
               examples:
                 config_limit_reached:
                   summary: "Config already exists"
-                  value: 
+                  value:
                     message: "trusted publisher config already exists for the package. Please delete and re-create."
   /-/package/{package}/trust/{config-uuid}:
     delete:
@@ -418,10 +418,10 @@ paths:
       summary: Delete trusted publisher configuration
       description: |
         Delete a specific trusted publisher configuration for a package by its UUID.
-        
+
         This endpoint allows users with write permission to the package to remove an existing trusted publisher
         configuration that was previously set up for OIDC token exchange.
-        
+
         ## Requirements
         - Package MUST exist
         - User MUST have write permission to the package
@@ -451,10 +451,10 @@ paths:
             pattern: '^Bearer .+'
           description: |
             Authentication header. Supports both Bearer authentication.
-            
+
             **Formats:**
             - `Bearer <token>` - npm access token or granular access token
-            
+
             **Accepted token types:**
             - npm access token (traditional user token)
         - name: npm-otp
@@ -485,7 +485,7 @@ paths:
               examples:
                 invalid_uuid:
                   summary: "Invalid UUID format"
-                  value: 
+                  value:
                     message: "Invalid trusted publisher config id format"
         "401":
           description: Unauthorized - missing or invalid authentication / OTP
@@ -523,7 +523,7 @@ paths:
                   summary: "No Authorization header provided"
                   description: |
                     When no Authorization header is provided or the token is invalid.
-                  value: 
+                  value:
                     message: "Unauthorized"
                 web_auth_flow:
                   summary: "2FA enabled + npm-otp header omitted (web auth flow)"
@@ -544,11 +544,11 @@ paths:
               examples:
                 2fa_disabled:
                   summary: "Please enable 2fa for your account"
-                  value: 
+                  value:
                     message: "Please enable 2fa for your account"
                 insufficient_permissions:
                   summary: "Insufficient permissions to delete configuration"
-                  value: 
+                  value:
                     message: "Insufficient permissions to access trusted publisher config for the package"
         "404":
           description: Package or configuration not found
@@ -562,11 +562,11 @@ paths:
               examples:
                 package_not_found:
                   summary: "Package not found"
-                  value: 
+                  value:
                     message: "Package not found"
                 config_not_found:
                   summary: "Configuration not found"
-                  value: 
+                  value:
                     message: "Trusted publisher configuration not found for the package"
 
 components:
@@ -579,7 +579,7 @@ components:
           - $ref: '#/components/schemas/GitHubActionsConfig'
           - $ref: '#/components/schemas/GitLabPipelinesConfig'
           - $ref: '#/components/schemas/CircleCIConfig'
-    
+
     OidcConfigsCreate:
       type: array
       description: Array of OIDC trusted publisher configurations to create
@@ -588,7 +588,7 @@ components:
           - $ref: '#/components/schemas/GitHubActionsConfigCreate'
           - $ref: '#/components/schemas/GitLabPipelinesConfigCreate'
           - $ref: '#/components/schemas/CircleCIConfigCreate'
-    
+
     GitHubActionsConfig:
       type: object
       required:
@@ -629,7 +629,7 @@ components:
               type: string
               description: GitHub environment name
               example: production
-    
+
     GitHubActionsConfigCreate:
       type: object
       required:
@@ -665,7 +665,7 @@ components:
               type: string
               description: GitHub environment name
               example: production
-    
+
     GitLabPipelinesConfig:
       type: object
       required:
@@ -706,7 +706,7 @@ components:
               type: string
               description: GitLab environment name
               example: production
-    
+
     CircleCIConfig:
       type: object
       required:

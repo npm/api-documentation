@@ -7,14 +7,14 @@ paths:
       description: |
         Create a new npm access token with customizable permissions, scope restrictions,
         expiration, and CIDR IP range limitations.
-        
+
         **Requirements:**
         - Must be authenticated
         - **Two-factor authentication is required for this endpoint**
           - If 2FA is enabled on your account, provide the OTP via the `npm-otp` header
           - If 2FA is not enabled, an email OTP will be sent and must be provided via the `npm-otp` header
           - For WebAuthn users, the OTP is returned in the `doneUrl` after authentication
-        
+
         **Important notices:**
         - All responses include security notices via the `npm-notice` header regarding token limitations
       operationId: createToken
@@ -27,9 +27,9 @@ paths:
             pattern: '^Bearer .+'
           description: |
             Bearer token for authentication. Must be an npm access token.
-            
+
             **Format:** `Bearer <token>`
-            
+
             **Accepted token types:**
             - npm access token (traditional user token created via `npm login`)
         - name: npm-otp
@@ -39,7 +39,7 @@ paths:
             type: string
           description: |
             One-time password for two-factor authentication. Always required for this endpoint.
-            
+
             **How to obtain the OTP:**
             - If 2FA is enabled on your account, provide the OTP from your configured 2FA method
             - If 2FA is not enabled, an email OTP will be sent and must be provided (format: `<8-digit-otp-from-email>`)
@@ -275,17 +275,17 @@ paths:
                 properties:
                   error:
                     type: string
-    
+
     get:
       tags:
         - Tokens
       summary: List npm access tokens
       description: |
         List all access tokens associated with the authenticated user's account.
-        
+
         **Requirements:**
         - Must be authenticated with a valid Bearer token
-        
+
         **Response includes:**
         - All responses include security notices via the `npm-notice` header
         - Tokens are redacted for security: format is `npm_aBcD...7890` (first 8 chars including prefix + ... + last 4 chars)
@@ -300,7 +300,7 @@ paths:
             pattern: '^Bearer .+'
           description: |
             Bearer token for authentication. Must be an npm access token.
-            
+
             **Format:** `Bearer <token>`
         - name: page
           in: query
@@ -379,7 +379,7 @@ paths:
                           type: string
                           format: date-time
                           description: Timestamp when the token was last updated
-                        accessed: 
+                        accessed:
                           type: string
                           format: date-time
                           description: Timestamp when the token was last accessed
@@ -443,7 +443,7 @@ paths:
                 properties:
                   message:
                     type: string
-  
+
   /-/npm/v1/tokens/token/{token}:
     delete:
       tags:
@@ -453,11 +453,11 @@ paths:
         Delete an npm access token. The token can be specified as:
         - A UUID (token identifier)
         - An npm-prefixed token (format: `npm_` followed by 36 alphanumeric characters)
-        
+
         **Requirements:**
         - Must be authenticated with a valid Bearer token
         - May require 2FA OTP depending on user settings
-        
+
         **Web authentication flow:**
         - When `npm-auth-type=web` and `npm-command=token` headers are present and 2FA is required,
           returns authentication URLs instead of an error
@@ -480,7 +480,7 @@ paths:
             pattern: '^Bearer .+'
           description: |
             Bearer token for authentication. Must be an npm access token.
-            
+
             **Format:** `Bearer <token>`
         - name: npm-otp
           in: header
@@ -617,7 +617,7 @@ components:
         2. **No 2FA enabled + npm-otp header omitted**: Returns error requesting email OTP. An email is automatically sent to the user's registered email address
         3. **2FA enabled + npm-otp header omitted (legacy flow)**: Returns 2FA error with npm-notice header containing WebAuthn URL. This is for older CLI versions without web auth support
         4. **2FA enabled + npm-otp header omitted (web auth flow)**: Returns authentication URLs (authUrl and doneUrl) when both npm-auth-type=web and npm-command=token headers are present
-        
+
       headers:
         npm-notice:
           description: |
@@ -659,7 +659,7 @@ components:
               summary: "No 2FA enabled + npm-otp header omitted"
               description: |
                 When user has no 2FA enabled and omits the `npm-otp` header.
-                
+
                 An email OTP is automatically sent to the user's registered email address.
                 The user should check their email and retry the request with the received OTP.
               value:
@@ -668,7 +668,7 @@ components:
               summary: "2FA enabled + npm-otp header omitted (legacy flow)"
               description: |
                 When user has 2FA enabled, omits the `npm-otp` header, and doesn't include web auth headers. This is a legacy notice supported in older versions of the CLI without support for `npm-auth-type=web`.
-                
+
                 **Response includes npm-notice header:**
 
                 > `npm-notice: Open https://www.npmjs.com/login/<uuid> to use your security key for authentication`
