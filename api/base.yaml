@@ -92,6 +92,7 @@ x-tagGroups:
       - OIDC
       - Trust
       - Access
+      - Org
 
 components:
   securitySchemes:

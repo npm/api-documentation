@@ -1,5 +1,20 @@
 components:
   parameters:
+    EscapedPackageName:
+      name: escapedPackageName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of a package.  Scoped packages need their "/" to be url encoded to "%2F"
+      example: "@npmcli%2Farborist"
+    OrgName:
+      name: orgName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Name of an org
     RequiredBearerToken:
       name: Authorization
       in: header
@@ -22,3 +37,22 @@ components:
           schema:
             not:
               {}
+    Unauthorized:
+      description: "Unauthorized"
+      headers:
+        www-authenticate:
+          description: Authentication challenge (e.g., "OTP" when OTP is required)
+          schema:
+            type: string
+        npm-notice:
+          description: Additional notice information
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
