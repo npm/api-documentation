@@ -19,7 +19,7 @@ tags:
     x-displayName: Introduction
     description: |
       This is the API documentation for the npm registry. For information about the npm registry, website, and command-line interface (CLI), please refer to [https://docs.npmjs.com](https://docs.npmjs.com).
-  
+
   - name: Authentication
     x-displayName: Authentication & Authorization
     description: |
@@ -94,6 +94,7 @@ x-tagGroups:
       - Access
       - Org
       - Team
+      - Search
 
 components:
   securitySchemes:
@@ -105,12 +106,12 @@ components:
       description: |
         OIDC id_token from a supported Identity Provider (IdP) such as GitHub Actions, GitLab CI, or CircleCI.
         The `aud` (audience) claim must be set to `npm:registry.npmjs.org`.
-        
+
         **Supported Identity Providers:**
         - GitHub Actions
         - GitLab CI
         - CircleCI
-    
+
     # Traditional npm user access tokens
     npmSessionToken:
       type: http
@@ -118,7 +119,7 @@ components:
       description: |
         Traditional npm session token created via `npm login`.
         These tokens are tied to a user account and inherit the user's permissions.
-    
+
     # Granular Access Tokens (GAT) - fine-grained tokens with specific permissions
     npmAccessToken:
       type: http
@@ -126,7 +127,7 @@ components:
       description: |
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
-    
+
     # Alias for npmAccessToken - for backward compatibility
     granularAccessToken:
       type: http
@@ -135,7 +136,7 @@ components:
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
         (Alias for npmAccessToken)
-    
+
     # Short-lived tokens obtained from OIDC token exchange
     oidcExchangeToken:
       type: http
@@ -144,4 +145,4 @@ components:
         Short-lived npm registry token obtained by exchanging an OIDC id_token
         via the `/oidc/token/exchange` endpoint. These tokens are package-scoped
         and have limited lifetime (typically 1 hour).
-    
+
