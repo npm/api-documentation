@@ -14,7 +14,7 @@ components:
                 type: string
                 description: Error code for this response
     SearchResults:
-      description: The users in a team
+      description: Search results
       content:
         application/json:
           schema:
