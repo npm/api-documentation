@@ -579,7 +579,7 @@ paths:
                   summary: "Invalid OTP provided"
                   value:
                     error: "invalid OTP"
-                webAuthFlow:
+                web_auth_flow:
                   summary: "Web authentication flow (2FA required)"
                   description: |
                     When user has 2FA enabled and includes both `npm-auth-type=web` and `npm-command=token` headers.

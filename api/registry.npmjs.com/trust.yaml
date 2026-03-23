@@ -125,6 +125,7 @@ paths:
                     properties:
                       message:
                         type: string
+                    required: [message]
                   - type: object
                     description: Web authentication flow response
                     properties:
@@ -343,6 +344,7 @@ paths:
                     properties:
                       message:
                         type: string
+                    required: [message]
                   - type: object
                     description: Web authentication flow response
                     properties:
@@ -506,6 +508,7 @@ paths:
                     properties:
                       message:
                         type: string
+                    required: [message]
                   - type: object
                     description: Web authentication flow response
                     properties:
