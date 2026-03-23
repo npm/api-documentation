@@ -93,6 +93,7 @@ x-tagGroups:
       - Trust
       - Access
       - Org
+      - Team
 
 components:
   securitySchemes:
