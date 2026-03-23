@@ -1,5 +1,18 @@
 components:
   responses:
+    MissingField:
+      description: A required parameter was missing
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Message explaining what was missing from the request
+              code:
+                type: string
+                description: Error code for this response
     SearchResults:
       description: The users in a team
       content:
@@ -141,3 +154,5 @@ paths:
       responses:
         '200':
           $ref: '#/components/responses/SearchResults'
+        '400':
+          $ref: '#/components/responses/MissingField'
