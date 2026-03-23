@@ -124,6 +124,7 @@ components:
                 description: The total number of items in the search results
               time:
                 type: string
+                format: date-time
                 description: The current time
 paths:
   /-/v1/search:
