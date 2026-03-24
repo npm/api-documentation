@@ -13,6 +13,9 @@ components:
               code:
                 type: string
                 description: Error code for this response
+          example:
+            error: "'text' query parameter is required"
+            code: "ERR_TEXT_MISSING"
     SearchResults:
       description: Search results
       content:
@@ -126,6 +129,50 @@ components:
                 type: string
                 format: date-time
                 description: The current time
+          example:
+            objects:
+              - downloads:
+                  monthly: 412841
+                  weekly: 93602
+                dependents: 20
+                updated: "2026-03-24T07:35:20.725Z"
+                searchScore: 1538.6487
+                package:
+                  name: "@npm/types"
+                  keywords:
+                    - "npm registry"
+                    - "types"
+                    - "typescript"
+                    - "definitions"
+                    - "typings"
+                  version: "2.1.0"
+                  description: "Typescript definitions for npm registry content"
+                  sanitized_name: "@npm/types"
+                  publisher:
+                    email: "npm-robot@github.com"
+                    username: "npm-robot"
+                  maintainers:
+                    - email: "npm@npmjs.com"
+                      username: "npm"
+                    - email: "ops@npmjs.com"
+                      username: "npmci"
+                  license: "MIT"
+                  date: "2025-04-28T20:18:14.734Z"
+                  links:
+                    homepage: "https://github.com/npm/types#readme"
+                    repository: "git+https://github.com/npm/types.git"
+                    bugs: "https://github.com/npm/types/issues"
+                    npm: "https://www.npmjs.com/package/@npm/types"
+                score:
+                  final: 1538.6487
+                  detail:
+                    popularity: 1
+                    quality: 1
+                    maintenance: 1
+                flags:
+                  insecure: 0
+            total: 1
+            time: "2026-03-24T07:35:20.725Z"
 paths:
   /-/v1/search:
     get:
