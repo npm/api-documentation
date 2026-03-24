@@ -81,6 +81,8 @@ paths:
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
     delete:
+      tags:
+        - Access
       summary: Remove access to a package for a team
       operationId: deleteTeamPackageGrant
       security:
