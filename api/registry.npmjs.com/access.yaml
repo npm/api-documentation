@@ -43,7 +43,7 @@ paths:
       tags:
         - Access
       summary: Get all packages for a team
-      description: Get all of the packages a team has access to, as well a the access level that team has for each package.
+      description: Get all of the packages a team has access to, as well as the access level that team has for each package.
       operationId: getTeamPackageGrants
       security:
         - npmSessionToken: []
