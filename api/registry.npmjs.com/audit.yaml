@@ -1,0 +1,109 @@
+components:
+  responses:
+    InvalidPayload:
+      description: Invalid request payload
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              statusCode:
+                type: integer
+                enum:
+                  - 400
+              error:
+                type: string
+                example: Bad Request
+              message:
+                type: string
+                example: Invalid request payload input
+    BulkAudit:
+      description: Bulk audit response
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              x-additionalPropertiesName: '@npm/example-package'
+              type: array
+              description: Vulnerabilities for a given package
+              items:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                    example: 100000
+                  url:
+                    type: string
+                    format: uri
+                    example: https://github.com/advisories/GHSA-xxxx-xxxx-xxxx
+                    description: URL for this advisory
+                  title:
+                    type: string
+                    example: Prototype Pollution
+                    description: Title for this advisory
+                  severity:
+                    type: string
+                    enum:
+                      - info
+                      - low
+                      - moderate
+                      - high
+                      - critical
+                    description: Severity for this advisory
+                  vulnerable_versions:
+                    type: string
+                    format: semver
+                    example: '>1.0.1 <2.0.0'
+                    description: Versions of this package that this advisory applies to
+                  cwe:
+                    type: array
+                    description: Common Weakness Enumeration
+                    items:
+                      type: string
+                      example: CWE-400
+                  cvss:
+                    type: object
+                    description: Common Vulnerability Scoring System
+                    properties:
+                      score:
+                        type: number
+                        example: 7.0
+                      vectorString:
+                        type: string
+                        example: CVSS:3.1/AV:L/AC:H/PR:L/UI:N/S:U/C:H/I:H/A:H
+paths:
+  /-/npm/v1/security/advisories/bulk:
+    post:
+      tags:
+        - Audit
+      summary: Get advisories for packages
+      description: Get advisories for a list of packages and version ranges
+      operationId: bulkAudit
+      requestBody:
+        required: true
+        description: Packages with their versions
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties:
+                x-additionalPropertiesName: '@npm/example-package'
+                type: array
+                description: Array of versions for this package
+                items:
+                  type: string
+                  description: semver version
+              example:
+                '@npmcli/arborist':
+                  - 1.0.0
+                  - 2.0.1
+                '@npmcli/config':
+                  - 10.4.2
+      security:
+        []
+      responses:
+        '200':
+          $ref: '#/components/responses/BulkAudit'
+        '400':
+          $ref: '#/components/responses/InvalidPayload'
