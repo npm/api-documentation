@@ -19,7 +19,7 @@ tags:
     x-displayName: Introduction
     description: |
       This is the API documentation for the npm registry. For information about the npm registry, website, and command-line interface (CLI), please refer to [https://docs.npmjs.com](https://docs.npmjs.com).
-  
+
   - name: Authentication
     x-displayName: Authentication & Authorization
     description: |
@@ -27,28 +27,28 @@ tags:
 
       **Token Types:**
 
-      **1. npm Session Token (`npmSessionToken`)**  
+      **1. npm Session Token (`npmSessionToken`)**
       Traditional npm session tokens created via `npm login`. These tokens:
       - Are tied to a user account
       - Inherit the user's permissions
       - Have limited expiration
       - **Required for:** User account management, token creation/management
 
-      **2. npm Access Token (`npmAccessToken`)**  
+      **2. npm Access Token (`npmAccessToken`)**
       Fine-grained tokens with specific permissions:
       - Can be scoped to specific packages and organizations
       - Can be scoped to specific operations (read, write, publish)
       - Have configurable expiration
       - **Supported for:** Most package operations where explicitly documented
 
-      **3. OIDC id_token (`oidcIdToken`)**  
+      **3. OIDC id_token (`oidcIdToken`)**
       Tokens from supported Identity Providers (CI/CD systems):
       - From GitHub Actions, GitLab CI, CircleCI, etc.
       - Must have `aud` claim set to `npm:registry.npmjs.org`
       - Short-lived tokens
       - **Required for:** OIDC token exchange only
 
-      **4. OIDC Exchange Token (`oidcExchangeToken`)**  
+      **4. OIDC Exchange Token (`oidcExchangeToken`)**
       Short-lived tokens obtained from OIDC token exchange:
       - Package-scoped permissions
       - Limited lifetime (typically 1 hour)
@@ -91,6 +91,10 @@ x-tagGroups:
       - Tokens
       - OIDC
       - Trust
+      - Access
+      - Org
+      - Team
+      - Search
 
 components:
   securitySchemes:
@@ -102,12 +106,12 @@ components:
       description: |
         OIDC id_token from a supported Identity Provider (IdP) such as GitHub Actions, GitLab CI, or CircleCI.
         The `aud` (audience) claim must be set to `npm:registry.npmjs.org`.
-        
+
         **Supported Identity Providers:**
         - GitHub Actions
         - GitLab CI
         - CircleCI
-    
+
     # Traditional npm user access tokens
     npmSessionToken:
       type: http
@@ -115,7 +119,7 @@ components:
       description: |
         Traditional npm session token created via `npm login`.
         These tokens are tied to a user account and inherit the user's permissions.
-    
+
     # Granular Access Tokens (GAT) - fine-grained tokens with specific permissions
     npmAccessToken:
       type: http
@@ -123,7 +127,7 @@ components:
       description: |
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
-    
+
     # Alias for npmAccessToken - for backward compatibility
     granularAccessToken:
       type: http
@@ -132,7 +136,7 @@ components:
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
         (Alias for npmAccessToken)
-    
+
     # Short-lived tokens obtained from OIDC token exchange
     oidcExchangeToken:
       type: http
@@ -141,4 +145,4 @@ components:
         Short-lived npm registry token obtained by exchanging an OIDC id_token
         via the `/oidc/token/exchange` endpoint. These tokens are package-scoped
         and have limited lifetime (typically 1 hour).
-    
+

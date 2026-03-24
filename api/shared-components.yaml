@@ -1,0 +1,67 @@
+components:
+  parameters:
+    EscapedPackageName:
+      name: escapedPackageName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: The name of a package.  Scoped packages need "/" to be url encoded to "%2F"
+      example: '@npmcli%2Farborist'
+    OrgName:
+      name: orgName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Name of an org
+    TeamName:
+      name: teamName
+      in: path
+      required: true
+      schema:
+        type: string
+      description: Name of a team
+    RequiredBearerToken:
+      name: Authorization
+      in: header
+      required: true
+      schema:
+        type: string
+        pattern: '^Bearer .+'
+      description: |
+        Bearer token for authentication. Must be an npm access token.
+
+        **Format:** `Bearer <token>`
+
+        **Accepted token types:**
+        - npm access token (traditional user token created via `npm login`)
+  responses:
+    EmptySuccess:
+      description: Success
+      content:
+        '*/*':
+          schema:
+            not:
+              {}
+    Unauthorized:
+      description: Unauthorized
+      headers:
+        www-authenticate:
+          description: Authentication challenge (e.g., "OTP" when OTP is required)
+          schema:
+            type: string
+        npm-notice:
+          description: Additional notice information
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Error message
+          example:
+            error: Missing "Bearer" header.

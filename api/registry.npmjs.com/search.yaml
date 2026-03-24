@@ -1,0 +1,159 @@
+components:
+  responses:
+    MissingField:
+      description: A required parameter was missing
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+                description: Message explaining what was missing from the request
+              code:
+                type: string
+                description: Error code for this response
+    SearchResults:
+      description: Search results
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              objects:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    downloads:
+                      type: object
+                      properties:
+                        monthly:
+                          type: number
+                          description: Download count for this package in the last month
+                        weekly:
+                          type: number
+                          description: Download count for this package in the last week
+                    dependents:
+                      type: number
+                      description: The number of packages that list this package as a dependency
+                    updated:
+                      type: string
+                      format: date-time
+                      description: When the package was last updated
+                    searchScore:
+                      type: number
+                      description: Search score of this result, same as score.final
+                    package:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: The name of the package
+                        keywords:
+                          type: array
+                          items:
+                            type: string
+                            description: A keyword associated with this package
+                        version:
+                          type: string
+                          description: The latest version of this package.
+                        description:
+                          type: string
+                          description: The description of this package from its package.json
+                        sanitized_name:
+                          type: string
+                          description: The name of the package with some characters changed to help with indexing
+                        publisher:
+                          type: object
+                          properties:
+                            username:
+                              type: string
+                            email:
+                              type: string
+                          description: Information about the user that published the latest version of this package
+                        maintainers:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              username:
+                                type: string
+                              email:
+                                type: string
+                          description: Information about the users who own this package
+                        license:
+                          type: string
+                          description: SPDX license for this package
+                        date:
+                          type: string
+                          format: date-time
+                          description: Timestamp of when the latest version of this package was published
+                        links:
+                          type: object
+                          properties:
+                            homepage:
+                              type: string
+                              description: The main homepage for this package
+                            repository:
+                              type: string
+                              description: The repository for this package's source code
+                            bugs:
+                              type: string
+                              description: Where to report bugs for this package
+                            npm:
+                              type: string
+                              description: This package's main page on the npm website
+                    score:
+                      type: object
+                      properties:
+                        final:
+                          type: number
+                          description: Search score of this result, same as searchScore
+                        detail:
+                          type: object
+                          description: Legacy "pqm" values of this result.  These are hard coded and left in for legacy purposes, all set to "1"
+                    flags:
+                      type: object
+                      properties:
+                        insecure:
+                          type: number
+                          description: Legacy attribute. Always set to 0.
+              total:
+                type: number
+                description: The total number of items in the search results
+              time:
+                type: string
+                format: date-time
+                description: The current time
+paths:
+  /-/v1/search:
+    get:
+      parameters:
+        - name: text
+          in: query
+          required: true
+          schema:
+            type: string
+          description: The search query text
+        - name: size
+          in: query
+          schema:
+            type: number
+          description: The number of search results to return
+        - name: from
+          in: query
+          schema:
+            type: number
+          description: The starting index of the search results
+      tags:
+        - Search
+      summary: Search for packages on the registry
+      description: Search for packages on the registry
+      operationId: getsearch
+      security: []
+      responses:
+        '200':
+          $ref: '#/components/responses/SearchResults'
+        '400':
+          $ref: '#/components/responses/MissingField'

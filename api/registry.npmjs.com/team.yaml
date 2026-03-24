@@ -1,0 +1,166 @@
+components:
+  responses:
+    TeamUsers:
+      description: The users in a team
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+              description: A username of a user in the team
+            example:
+              - npm
+              - npm-cli-bot
+    OrgTeams:
+      description: The teams in an org
+      content:
+        application/json:
+          schema:
+            type: array
+            items:
+              type: string
+              description: The teams in the org, in the format of orgname:teamname
+            example:
+              - '@npmcli:wombats'
+
+paths:
+  /-/org/{orgName}/team:
+    parameters:
+      - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
+      - $ref: './api/shared-components.yaml#/components/parameters/RequiredBearerToken'
+    get:
+      tags:
+        - Org
+      summary: Get teams in an org
+      description: Get all of the teams in an org
+      operationId: getScopeTeams
+      security:
+        - npmSessionToken: []
+      responses:
+        '200':
+          $ref: '#/components/responses/OrgTeams'
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Team
+      summary: Create a new team
+      description: Create a new team for an org
+      operationId: putScopeTeam
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the team to create
+                description:
+                  type: string
+                  description: The description of the team to create
+              example: { name: 'wombats', description: 'All developers' }
+      security:
+        - npmSessionToken: []
+      responses:
+        '201':
+          description: Team was created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: The name of the team that was created
+                example:
+                  name: wombats
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+  /-/org/{orgName}/{teamName}:
+    parameters:
+      - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
+      - $ref: './api/shared-components.yaml#/components/parameters/TeamName'
+      - $ref: './api/shared-components.yaml#/components/parameters/RequiredBearerToken'
+    delete:
+      tags:
+        - Team
+      summary: Delete a team
+      description: Delete a team from a given org
+      operationId: deleteTeam
+      security:
+        - npmSessionToken: []
+      responses:
+        '204':
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+  /-/org/{orgName}/{teamName}/user:
+    parameters:
+      - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
+      - $ref: './api/shared-components.yaml#/components/parameters/TeamName'
+      - $ref: './api/shared-components.yaml#/components/parameters/RequiredBearerToken'
+    get:
+      tags:
+        - Team
+      summary: Get all users in a team
+      description: Get all users in a team
+      operationId: getTeamMembership
+      security:
+        - npmSessionToken: []
+      responses:
+        '200':
+          $ref: '#/components/responses/TeamUsers'
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Team
+      summary: Add a user to a team
+      description: Add a user to a team in an org. The user must already be a member of the org.
+      operationId: createTeamMembership
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                  description: The username of the user to add to the team
+              example:
+                user: npm-cli-bot
+      security:
+        - npmSessionToken: []
+      responses:
+        '201':
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+    delete:
+      tags:
+        - Team
+      summary: Remove a user from a team
+      operationId: deleteTeamMembership
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                  description: The username of the user to remove from the team
+              example:
+                user: npm-cli-bot
+      security:
+        - npmSessionToken: []
+      responses:
+        '204':
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'

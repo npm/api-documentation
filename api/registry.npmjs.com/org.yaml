@@ -1,0 +1,111 @@
+components:
+  responses:
+    OrgMembers:
+      description: "Org members with their access levels"
+      content:
+        application/json:
+          schema:
+            type: object
+            additionalProperties:
+              type: string
+            example:
+              "npm": "owner"
+              "npm-cli-bot": "developer"
+    OrgInvite:
+      description: "Confirmation about the org membership or invite that was generated"
+      headers:
+        npm-notice:
+          description: Additional info about the invite sent to the user
+          schema:
+            type: string
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              org:
+                type: object
+                properties:
+                  name:
+                    type: string
+                    description: The name of the org
+                  size:
+                    type: string
+                    description: current size of the org, including invites
+              user:
+                type: string
+                description: The username that was invited or edited
+              role:
+                type: string
+                description: The role that the user was given in the org
+paths:
+  /-/org/{orgName}/user:
+    parameters:
+      - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
+      - $ref: "./api/shared-components.yaml#/components/parameters/RequiredBearerToken"
+    get:
+      tags:
+        - Org
+      summary: Get users in an org
+      description: Get all of the users in an org, along with their access levels in that org
+      operationId: getOrgMembership
+      security:
+        - npmSessionToken: []
+      responses:
+        "200":
+          $ref: '#/components/responses/OrgMembers'
+        "401":
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+    put:
+      tags:
+        - Org
+      summary: Set user membership in an org
+      description: Set a user's membership in an org. If the user is not already a member, an invite will be sent.
+      operationId: changeOrgMembership
+      security:
+        - npmSessionToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                  description: Username to grant membership to org
+                role:
+                  type: string
+                  enum:
+                    - developer
+                    - admin
+                    - owner
+                  description: Role to give user in org
+      responses:
+        "201":
+          $ref: '#/components/responses/OrgInvite'
+        "401":
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+    delete:
+      tags:
+        - Org
+      summary: Remove user membership in an org
+      description: Remove a user's membership in an org
+      operationId: deleteOrgMembership
+      security:
+        - npmSessionToken: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                  description: Username to remove from the org
+      responses:
+        "204":
+          $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
+        "401":
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
