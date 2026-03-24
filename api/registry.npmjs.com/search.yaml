@@ -109,7 +109,7 @@ components:
                       properties:
                         final:
                           type: number
-                          description: Search score of this result, same as sesarchScore
+                          description: Search score of this result, same as searchScore
                         detail:
                           type: object
                           description: Legacy "pqm" values of this result.  These are hard coded and left in for legacy purposes, all set to "1"
