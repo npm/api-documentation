@@ -88,13 +88,14 @@ x-tagGroups:
       - Authentication
   - name: Sections
     tags:
-      - Tokens
-      - OIDC
-      - Trust
       - Access
+      - Audit
+      - OIDC
       - Org
-      - Team
       - Search
+      - Team
+      - Tokens
+      - Trust
 
 components:
   securitySchemes:
