@@ -149,8 +149,8 @@ components:
                   description: "Typescript definitions for npm registry content"
                   sanitized_name: "@npm/types"
                   publisher:
-                    email: "reggi@github.com"
-                    username: "reggi"
+                    email: "npm-robot@github.com"
+                    username: "npm-robot"
                   maintainers:
                     - email: "npm@npmjs.com"
                       username: "npm"
