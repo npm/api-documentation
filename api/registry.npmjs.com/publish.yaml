@@ -133,7 +133,7 @@ paths:
                       content_type: 'application/octet-stream'
                       data: ZXhhbXBsZQo=
                       length: 13
-                    'npm@2.0.0.sigstore':
+                    'npm-2.0.0.sigstore':
                       content_type: 'application/vnd.dev.sigstore.bundle+json;version=0.2'
                       data: ZXhhbXBsZQo=
                       length: 13
