@@ -78,7 +78,7 @@ paths:
                       version:
                         type: string
                         format: semver
-                        description: verision of the package being published
+                        description: version of the package being published
                     additionalProperties:
                       oneOf:
                         - type: string
