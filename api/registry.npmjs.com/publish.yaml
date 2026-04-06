@@ -129,7 +129,7 @@ paths:
                             type: integer
                             description: length of the provenance data string
                   example:
-                    'npm@2.0.0.tgz':
+                    'npm-2.0.0.tgz':
                       content_type: 'application/octet-stream'
                       data: ZXhhbXBsZQo=
                       length: 13
