@@ -1,0 +1,149 @@
+components:
+  responses:
+    PublishSuccess:
+      description: Successful Publish
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                enum:
+                  - true
+paths:
+  /{escapedPackageName}:
+    parameters:
+      - $ref: './api/shared-components.yaml#/components/parameters/EscapedPackageName'
+      - $ref: './api/shared-components.yaml#/components/parameters/RequiredBearerToken'
+    put:
+      tags:
+        - Publish
+      summary: Publish a new version of a package
+      operationId: publish
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                _id:
+                  type: string
+                  example: 'npm@2.0.0'
+                  description: The name and version of the package being published
+                name:
+                  type: string
+                  example: npm
+                  description: The name of the package being published
+                description:
+                  type: string
+                  example: a package manager for JavaScript
+                  description: The description of the package being published
+                'dist-tags':
+                  type: object
+                  description: dist-tag to apply for this new version
+                  additionalProperties:
+                    type: string
+                    format: semver
+                    description: version for this tag, must be the version being uploaded
+                  example:
+                    latest: 2.0.0
+                dist:
+                  type: object
+                  properties:
+                    integrity:
+                      type: string
+                      format: sha512
+                      description: sha512 integrity string for this version's tarball
+                      example: 'sha512-0p99G5Mu9FC3ixLarvgfU0O8xoc386LBll2UixE8rbSJrKRFoXbJFbGSOBN9exJiFXryiLDFFhCKjOOBxQ/dsQ=='
+                    shasum:
+                      type: string
+                      format: sha1
+                      description: sha1 hex digest for this version's tarball
+                      example: f783874393588901af1a4824a145fa009f174d9d
+                    tarball:
+                      type: string
+                      format: url
+                      description: url for the tarball will live. This is overwritten by the registry.
+                      example: https://registry.npmjs.org/npm/-/npm-2.0.0.tgz
+                versions:
+                  description: 'manifest (package.json) of the package to be published, indexed by the version being published'
+                  additionalProperties:
+                    type: object
+                    properties:
+                      name:
+                        type: string
+                        description: package name
+                      version:
+                        type: string
+                        format: semver
+                        description: version of the package being published
+                    additionalProperties:
+                      oneOf:
+                        - type: string
+                        - type: object
+                        - type: array
+                      description: other package.json content
+                  example:
+                    '2.0.0':
+                      name: npm
+                      version: 2.0.0
+                      description: A package manager for node
+                access:
+                  type: string
+                  example: public
+                  enum:
+                    - public
+                    - restricted
+                  description: Access level for this package. Whether it is public or not.
+                _attachments:
+                  type: object
+                  description: Tarball and provenance attestation attachments
+                  additionalProperties:
+                    anyOf:
+                      - type: object
+                        properties:
+                          content_type:
+                            type: string
+                            description: tarball content type
+                            enum:
+                              - 'application/octet-stream'
+                          data:
+                            type: string
+                            format: base64
+                            description: base64 content of the tarball for this version
+                          length:
+                            type: integer
+                            description: length of the tarball data string
+                      - type: object
+                        properties:
+                          content_type:
+                            type: string
+                            description: sigstore content type
+                          data:
+                            type: string
+                            format: base64
+                            description: base64 content of the provenance attestation for this version
+                          length:
+                            type: integer
+                            description: length of the provenance data string
+                  example:
+                    'npm-2.0.0.tgz':
+                      content_type: 'application/octet-stream'
+                      data: ZXhhbXBsZQo=
+                      length: 13
+                    'npm-2.0.0.sigstore':
+                      content_type: 'application/vnd.dev.sigstore.bundle+json;version=0.2'
+                      data: ZXhhbXBsZQo=
+                      length: 13
+      security:
+        - npmAccessToken: []
+        - npmSessionToken: []
+        - granularAccessToken: []
+        - oidcIdToken: []
+      responses:
+        '200':
+          $ref: '#/components/responses/PublishSuccess'
+        '401':
+          $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
