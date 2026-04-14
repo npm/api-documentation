@@ -30,6 +30,7 @@ module.exports = {
   ciVersions: 'latest',
   latestCiVersion: 22,
   macCI: false,
+  updateNpm: false,
   windowsCI: false,
   lockfile: true,
   // these need to be allowed since they need to installed explicitly since
