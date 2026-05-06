@@ -1,0 +1,790 @@
+paths:
+  /-/stage:
+    get:
+      tags:
+        - Stage
+      summary: Fetch a list of all staged package versions for the authenticated user.
+      description: |
+        Retrieve staged package versions that are awaiting maintainer review.
+
+        This endpoint returns only items visible to the authenticated user. Results will be returned 
+        in the order of most recently staged first in a descending order. Results are
+        paginated and can be filtered by package name using the `package` query parameter.
+
+        ## Requirements
+        - User MUST be authenticated with a valid npm token
+      operationId: getStageItems
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: |
+            Authentication header. Supports both Bearer authentication.
+
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: package
+          in: query
+          required: false
+          schema:
+            type: string
+          description: Filter the entire list of staged package versions by package name, url-encoded.
+        - name: page
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 0
+          description: Page number for pagination (0-indexed)
+        - name: perPage
+          in: query
+          required: false
+          schema:
+            type: integer
+            default: 10
+            maximum: 100
+          description: Number of items to return per page
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "200":
+          description: A list of staged package versions for the authenticated user.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StagePackageList"
+              examples:
+                success:
+                  summary: Staged package versions retrieved successfully
+                  value:
+                    items:
+                      - id: "1de6f3db-2ed9-4d72-b3dd-8f0e2b474a2f"
+                        packageName: "@npmcli/example-package"
+                        version: "1.2.3"
+                        tag: "latest"
+                        createdAt: "2026-03-16T09:00:00.000Z"
+                        actor: "octocat"
+                        actorType: "user"
+                        access: "public"
+                        shasum: "4f7f5f1d5bcf2f72f6e4d6c4f3b2812d8a2f6c19"
+                      - id: "f8e7a45b-7a5f-4f31-8e6d-9dd1c6ef38c0"
+                        packageName: "example-lib"
+                        version: "0.4.0"
+                        tag: "next"
+                        createdAt: "2026-03-15T18:22:11.000Z"
+                        actor: "npm-bot"
+                        actorType: "trusted automation"
+                        access: "private"
+                        shasum: "8eb3b4e9b6e3d0d2c86be1e6d4f43f4be62e80ad"
+                    page: 0
+                    perPage: 10
+                    total: 2
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /-/stage/package/{package-name}: 
+    post:
+      tags:
+        - Stage
+      summary: Publishes a package version to staging to be reviewed by maintainers.
+      description: |
+        Submit a package version to staging for maintainer review.
+
+        The request body must contain a publish-style packument payload, including version
+        metadata and package attachments. The staged item can then be reviewed, inspected,
+        approved, or deleted by authorized maintainers.
+
+        ## Requirements
+        - Package MUST exist or be creatable by the authenticated publisher
+        - User MUST be authenticated with a valid npm token
+        - Request body MUST include required fields in `StagedPackumentRequest`
+      operationId: stagePackageVersion
+      parameters:
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: |
+            Authentication header. Supports both Bearer authentication.
+
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: package-name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The name of the package to stage, including scope if applicable, url-encoded and slash-escaped.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/StagedPackumentRequest"
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "201":
+          description: The package version was successfully staged for review.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Package version staged successfully."
+                  stageId:
+                    type: string
+                    format: uuid
+                    description: Unique identifier for the staged package version, used for subsequent review actions.
+              examples:
+                success:
+                  summary: "Successful staging of package version"
+                  value:
+                    message: "Package version staged successfully."
+                    stageId: "f8e7a45b-7a5f-4f31-8e6d-9dd1c6ef38c0"
+        "400":
+          description: Bad Request - The request body is missing required fields or contains invalid data.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+              examples:
+                missing_fields:
+                  summary: "Missing required fields in request body"
+                  value:
+                    message: "Bad Request - Missing required fields: name, version, _attachments"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/PackageNotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /-/stage/{stage-id}:
+    get:
+      tags:
+        - Stage
+      summary: Get details about a specific staged package version.
+      description: |
+        Retrieve detailed metadata for a single staged package version.
+
+        Use this endpoint to inspect a staged item before taking action, including package
+        identity, version, dist-tag, creator, and tarball information.
+
+        ## Requirements
+        - `stage-id` MUST reference an existing staged package version
+        - User MUST be authenticated with a valid npm token
+      operationId: getStagePackageVersion
+      parameters:
+        - name: stage-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier for the staged package version.
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: |
+            Authentication header. Supports both Bearer authentication.
+
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+
+            **Accepted token types:**
+            - npm access token (traditional user token)
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "200":
+          description: Details about the staged package version.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/StagePackageVersion"
+              examples:
+                success:
+                  summary: Staged package version details retrieved successfully
+                  value:
+                    id: "1de6f3db-2ed9-4d72-b3dd-8f0e2b474a2f"
+                    packageName: "@npmcli/example-package"
+                    version: "1.2.3"
+                    tag: "latest"
+                    createdAt: "2026-03-16T09:00:00.000Z"
+                    actor: "octocat"
+                    actorType: "user"
+                    access: "public"
+                    shasum: "4f7f5f1d5bcf2f72f6e4d6c4f3b2812d8a2f6c19"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/StagePackageVersionNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+    delete:
+      tags:
+        - Stage
+      summary: Delete a staged package version.
+      description: |
+        Remove a staged package version from review.
+
+        This endpoint permanently deletes the staging record identified by `stage-id`.
+        Once deleted, the staged version can no longer be approved unless it is staged again.
+
+        ## Requirements
+        - `stage-id` MUST reference an existing staged package version
+        - User MUST be authenticated with a valid npm token
+        - User MUST provide a valid `npm-otp` value for 2FA accounts
+      operationId: deleteStagePackageVersion
+      parameters:
+        - name: stage-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier for the staged package version.
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: |
+            Authentication header. Supports both Bearer authentication.
+
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: npm-otp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Always required for this endpoint.
+
+            When not provided for users with 2FA enabled, the API responds with 2FA polling payload.
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "204":
+          description: The staged package version was successfully deleted.
+        "401":
+          $ref: "#/components/responses/UnauthorizedWithWebAuthn"
+        "403": 
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/StagePackageVersionNotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /-/stage/{stage-id}/approve:
+    post:
+      tags:
+        - Stage
+      summary: Approve a staged package version, publishing it to the npm registry.
+      description: |
+        Approve a staged package version and publish it to the npm registry.
+
+        This endpoint moves a version from staged review state to a published package
+        version. On success, the staged record will be processed and the package version will become
+        installable.
+
+        ## Requirements
+        - `stage-id` MUST reference an existing staged package version
+        - User MUST have permissions to approve and publish the package
+        - User MUST be authenticated with a valid npm token
+        - User MUST provide a valid `npm-otp` value for 2FA accounts
+      operationId: approveStagePackageVersion
+      parameters:
+        - name: stage-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier for the staged package version.
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: |
+            Authentication header. Supports both Bearer authentication.
+
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+
+            **Accepted token types:**
+            - npm access token (traditional user token)
+        - name: npm-otp
+          in: header
+          required: true
+          schema:
+            type: string
+          description: |
+            One-time password for two-factor authentication. Always required for this endpoint.
+
+            When not provided for users with 2FA enabled, the API responds with 2FA polling payload.
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "201":
+          description: The staged package version was successfully approved and published to the npm registry.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Package version approved and published successfully."
+              examples:
+                success:
+                  summary: "Successful approval of staged package version"
+                  value:
+                    message: "Package version approved and published successfully."
+        "401":
+          $ref: "#/components/responses/UnauthorizedWithWebAuthn"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          $ref: "#/components/responses/StagePackageVersionNotFound"
+        "409":
+          $ref: "#/components/responses/Conflict"
+        "429":
+          $ref: "#/components/responses/TooManyRequests"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+  /-/stage/{stage-id}/tarball: 
+    get: 
+      tags:
+        - Stage
+      summary: Get the tarball for a staged package version.
+      description: |
+        Download the package tarball for a staged package version.
+
+        This endpoint allows maintainers to inspect the contents of the staged package version
+        by downloading the tarball directly from staging storage before approving it.
+
+        ## Requirements
+        - `stage-id` MUST reference an existing staged package version
+        - User MUST be authenticated with a valid npm token
+      operationId: getStagePackageTarball
+      parameters:
+        - name: stage-id
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Unique identifier for the staged package version.
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: |
+            Authentication header. Supports both Bearer authentication.
+
+            **Formats:**
+            - `Bearer <token>` - npm access token or granular access token
+
+            **Accepted token types:**
+            - npm access token (traditional user token)
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "200":
+          description: The tarball for the staged package version.
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+              examples:
+                success:
+                  summary: "Successful retrieval of staged package tarball"
+                  value: (binary tarball data)
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/StagePackageVersionNotFound"
+        "500":
+          $ref: "#/components/responses/InternalServerError"
+components:
+  schemas:
+    StagePackageList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/StagePackageVersion"
+          description: List of staged package versions for the authenticated user.
+        page:
+          type: integer
+          description: The current page number (0-indexed).
+        perPage:
+          type: integer
+          description: The number of items returned per page.
+        total:
+          type: integer
+          description: The total number of staged package versions available.
+    StagePackageVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique identifier for the staged package version.
+        packageName:
+          type: string
+          description: The name of the package.
+        version:
+          type: string
+          description: The version of the package that is being staged.
+        tag:
+          type: string
+          description: The dist-tag associated with the staged package version.
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp when the item was staged.
+        actor:
+          type: string
+          description: The username of the user who staged the package version.
+        actorType:
+          type: string
+          description: The type of the actor (e.g., user, trusted automation).
+        access: 
+          type: string
+          description: >
+            The access level for the staged package version. 'public'
+            or 'private'.
+          enum:
+            - public
+            - private
+        shasum:
+          type: string
+          description: The shasum of the package tarball.
+    StagedPackumentRequest:
+      type: object
+      required:
+        - name
+        - versions
+        - _attachments
+      properties:
+        _id:
+          type: string
+          description: The package name, including scope if applicable.
+        name:
+          type: string
+          description: The name of the package, including scope if applicable.
+        description:
+          type: string
+          description: A short description of the package.
+        version:
+          type: string
+          description: >
+            The latest version string. Informational; the actual
+            version to publish is determined by the first key in the
+            `versions` object.
+        access:
+          type: string
+          description: >
+            The access level for the package. 'public' or 'private'.
+          enum:
+            - public
+            - private
+        versions:
+          type: object
+          description: >
+            An object where each key is a semver version string and
+            the value is the version metadata. The registry
+            assumes the FIRST key in this object is the newest
+            version being published. Only include the single new
+            version being published.
+          additionalProperties:
+            type: object
+            description: >
+              Version-specific metadata (package.json contents for
+              this version).
+            properties:
+              _npmUser:
+                type: object
+                description: >
+                  The user publishing this version. Should include at
+                  least the `name` field.
+        dist-tags:
+          type: object
+          description: >
+            Mapping of distribution tags to semver version strings.
+            e.g., {"latest": "1.2.3"}
+          additionalProperties:
+            type: string
+        readme:
+          type: string
+          description: The README content for the package.
+        maintainers:
+          type: array
+          description: List of package maintainers.
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+              email:
+                type: string
+        author:
+          type: string
+          description: The package author.
+        license:
+          type: string
+          description: The SPDX license identifier.
+        repository:
+          type: object
+          description: The source code repository.
+          properties:
+            type:
+              type: string
+            url:
+              type: string
+        main:
+          type: string
+          description: The entry point module.
+        scripts:
+          type: object
+          description: Package scripts.
+          additionalProperties:
+            type: string
+        _nodeVersion:
+          type: string
+          description: >
+            The version of node used to publish the package.
+        _npmVersion:
+          type: string
+          description: >
+            The version of npm used to publish the package.
+        _attachments:
+          type: object
+          description: >
+            An object containing the binary attachments. Each key is
+            an attachment name (typically `{version}.tgz` for the
+            tarball). The first attachment with
+            `content_type: 'application/octet-stream'` is treated as
+            the tarball; if no content_type is set, the first
+            attachment is used. An optional sigstore provenance bundle
+            attachment may also be included.
+          additionalProperties:
+            type: object
+            required:
+              - data
+            properties:
+              data:
+                type: string
+                description: >
+                  The base64-encoded binary data of the attachment
+                  (tarball or provenance bundle).
+              content_type:
+                type: string
+                description: >
+                  The MIME type of the attachment. Use
+                  `application/octet-stream` for the tarball. 
+                    For sigstore provenance bundles, use 
+                enum:
+                  - application/octet-stream
+                  - application/vnd.dev.sigstore.bundle+json;version=0.3
+        _rev:
+          type: string
+          description: >
+            Packument document revision. May be included when updating
+            an existing package.
+  responses:
+    Unauthorized:
+      description: Unauthorized - missing or invalid authentication
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                description: Error response for missing authentication
+                properties:
+                  message:
+                    type: string
+          examples:
+            unauthorized:
+              summary: "No Authorization header provided"
+              description: |
+                When no Authorization header is provided or the token is invalid.
+              value:
+                message: "Unauthorized"    
+    UnauthorizedWithWebAuthn:
+      description: Unauthorized - missing or invalid authentication / OTP
+      headers:
+        npm-notice:
+          description: |
+            Notice header sent when 2FA is enabled and web auth headers are not present.
+            Contains URL for WebAuthn security key authentication.
+          schema:
+            type: string
+          example: "Open https://www.npmjs.com/login/<uuid> to use your security key for authentication"
+      content:
+        application/json:
+          schema:
+            oneOf:
+              - type: object
+                description: Error response for missing authentication or OTP
+                properties:
+                  message:
+                    type: string
+              - type: object
+                description: Web authentication flow response
+                properties:
+                  authUrl:
+                    type: string
+                    format: uri
+                    description: URL to authenticate via web browser
+                  doneUrl:
+                    type: string
+                    format: uri
+                    description: URL to poll for completion of authentication
+                required: [authUrl, doneUrl]
+          examples:
+            unauthorized:
+              summary: "No Authorization header provided"
+              description: |
+                When no Authorization header is provided or the token is invalid.
+              value:
+                message: "Unauthorized"
+            web_auth_flow:
+              summary: "2FA enabled + npm-otp header omitted (web auth flow)"
+              description: |
+                When user has 2FA enabled, omits the `npm-otp` header, and includes both `npm-auth-type=web` and `npm-command=stage` headers.
+              value:
+                authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
+                doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
+    Forbidden:
+      description: 2fa required or insufficient permissions
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            2fa_disabled:
+              summary: "Please enable 2fa for your account"
+              value: 
+                message: "Please enable 2fa for your account"
+            insufficient_permissions:
+              summary: "Insufficient permissions to view resource"
+              value: 
+                message: "Insufficient permissions to access this resource"
+    PackageNotFound:
+      description: Not Found - The specified package does not exist.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            package_not_found:
+              summary: "Package not found"
+              value:
+                message: "Not Found - The specified package does not exist."
+    StagePackageVersionNotFound:
+      description: Not Found - No staged package version found with the provided ID.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            stage_package_not_found:
+              summary: "Staged package version not found"
+              value:
+                message: "Not Found - No staged package version found with the provided ID."
+    Conflict:
+      description: Conflict - The request could not be completed due to a conflict.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            conflict:
+              summary: "Conflict error"
+              value:
+                message: "Conflict - The request could not be completed due to a conflict."
+    TooManyRequests:
+      description: Too Many Requests - Rate limit exceeded.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            rate_limit_exceeded:
+              summary: "Rate limit exceeded"
+              value:
+                message: "Too Many Requests - Rate limit exceeded."
+    InternalServerError:
+      description: Internal Server Error - An internal error occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              message:
+                type: string
+          examples:
+            internal_error:
+              summary: "Internal Server Error"
+              value:
+                message: "An error occurred while processing your request."
