@@ -36,7 +36,7 @@
     "updateNpm": false
   },
   "dependencies": {
-    "@redocly/cli": "^2.9.0",
+    "@redocly/cli": "^2.30.4",
     "yaml": "^2.8.1"
   }
 }
