@@ -16,7 +16,7 @@ paths:
         In order to keep things clear and consistent, the properties to create a provider match the claims structure.
         The caveat is when a claim requires partial matching through parsing.
 
-        - All configurations MUST include a `type` and `claims` object
+        - All configurations MUST include a `type`, `claims` object, and `permissions` array
         - Top-level "claims" MUST match the cloud provider's exact claim properties
         - Claims MAY use exact string matching when supported
         - Claims MAY use an object structure to define one or multiple partial matching rules
@@ -42,7 +42,7 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^Bearer .+'
+            pattern: "^Bearer .+"
           description: |
             Authentication header. Supports both Bearer authentication.
 
@@ -69,7 +69,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OidcConfigs'
+                $ref: "#/components/schemas/OidcConfigs"
               examples:
                 empty:
                   summary: No configurations
@@ -84,6 +84,9 @@ paths:
                         workflow_ref:
                           file: "publish.yml"
                         environment: "production"
+                      permissions:
+                        - "createPackage"
+                        - "createStagedPackage"
                 gitlab:
                   summary: GitLab CI configuration
                   value:
@@ -94,6 +97,9 @@ paths:
                         ci_config_ref_uri:
                           file: ".gitlab-ci.yml"
                         environment: "production"
+                      permissions:
+                        - "createPackage"
+                        - "createStagedPackage"
                 circleci:
                   summary: CircleCI configuration
                   value:
@@ -106,6 +112,9 @@ paths:
                         oidc.circleci.com/context-ids:
                           - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
                         oidc.circleci.com/vcs-origin: "github.com/myorg/myrepo"
+                      permissions:
+                        - "createPackage"
+                        - "createStagedPackage"
         "401":
           description: Unauthorized - missing or invalid authentication / OTP
           headers:
@@ -193,7 +202,8 @@ paths:
 
         This endpoint allows users with write permission to the package to establish trust with CI/CD providers
         (GitHub Actions, GitLab CI, CircleCI, etc.) so that those services can publish to the package
-        without requiring long-lived npm tokens.
+        without requiring long-lived npm tokens. The configuration also defines the specific permissions
+        granted to the trusted publisher, controlling what actions it is allowed to perform.
 
         ## Requirements
         - Package MUST exist
@@ -214,7 +224,7 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^Bearer .+'
+            pattern: "^Bearer .+"
           description: |
             Authentication header. Supports both Bearer authentication.
 
@@ -237,7 +247,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/OidcConfigsCreate'
+              $ref: "#/components/schemas/OidcConfigsCreate"
             examples:
               github:
                 summary: GitHub Actions configuration array
@@ -248,6 +258,9 @@ paths:
                       workflow_ref:
                         file: "publish.yml"
                       environment: "production"
+                    permissions:
+                      - "createPackage"
+                      - "createStagedPackage"
               gitlab:
                 summary: GitLab CI configuration array
                 value:
@@ -257,6 +270,9 @@ paths:
                       ci_config_ref_uri:
                         file: ".gitlab-ci.yml"
                       environment: "production"
+                    permissions:
+                      - "createPackage"
+                      - "createStagedPackage"
               circleci:
                 summary: CircleCI configuration array
                 value:
@@ -268,6 +284,9 @@ paths:
                       oidc.circleci.com/context-ids:
                         - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
                       oidc.circleci.com/vcs-origin: "github.com/myorg/myrepo"
+                    permissions:
+                      - "createPackage"
+                      - "createStagedPackage"
       security:
         - npmAccessToken: []
         - granularAccessToken: []
@@ -277,7 +296,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/OidcConfigs'
+                $ref: "#/components/schemas/OidcConfigs"
               examples:
                 github:
                   summary: GitHub Actions configuration response
@@ -289,6 +308,9 @@ paths:
                         workflow_ref:
                           file: "publish.yml"
                         environment: "production"
+                      permissions:
+                        - "createPackage"
+                        - "createStagedPackage"
                 gitlab:
                   summary: GitLab CI configuration response
                   value:
@@ -299,6 +321,9 @@ paths:
                         ci_config_ref_uri:
                           file: ".gitlab-ci.yml"
                         environment: "production"
+                      permissions:
+                        - "createPackage"
+                        - "createStagedPackage"
                 circleci:
                   summary: CircleCI configuration response
                   value:
@@ -311,6 +336,9 @@ paths:
                         oidc.circleci.com/context-ids:
                           - "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
                         oidc.circleci.com/vcs-origin: "github.com/myorg/myrepo"
+                      permissions:
+                        - "createPackage"
+                        - "createStagedPackage"
         "400":
           description: Bad request body
           content:
@@ -450,7 +478,7 @@ paths:
           required: true
           schema:
             type: string
-            pattern: '^Bearer .+'
+            pattern: "^Bearer .+"
           description: |
             Authentication header. Supports both Bearer authentication.
 
@@ -579,18 +607,18 @@ components:
       description: Array of OIDC trusted publisher configurations
       items:
         oneOf:
-          - $ref: '#/components/schemas/GitHubActionsConfig'
-          - $ref: '#/components/schemas/GitLabPipelinesConfig'
-          - $ref: '#/components/schemas/CircleCIConfig'
+          - $ref: "#/components/schemas/GitHubActionsConfig"
+          - $ref: "#/components/schemas/GitLabPipelinesConfig"
+          - $ref: "#/components/schemas/CircleCIConfig"
 
     OidcConfigsCreate:
       type: array
       description: Array of OIDC trusted publisher configurations to create
       items:
         oneOf:
-          - $ref: '#/components/schemas/GitHubActionsConfigCreate'
-          - $ref: '#/components/schemas/GitLabPipelinesConfigCreate'
-          - $ref: '#/components/schemas/CircleCIConfigCreate'
+          - $ref: "#/components/schemas/GitHubActionsConfigCreate"
+          - $ref: "#/components/schemas/GitLabPipelinesConfigCreate"
+          - $ref: "#/components/schemas/CircleCIConfigCreate"
 
     GitHubActionsConfig:
       type: object
@@ -598,6 +626,7 @@ components:
         - id
         - type
         - claims
+        - permissions
       properties:
         id:
           type: string
@@ -632,12 +661,22 @@ components:
               type: string
               description: GitHub environment name
               example: production
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - createPackage
+              - createStagedPackage
+          description: List of permissions granted to the trusted publisher configuration
+          example: ["createPackage", "createStagedPackage"]
 
     GitHubActionsConfigCreate:
       type: object
       required:
         - type
         - claims
+        - permissions
       properties:
         type:
           type: string
@@ -668,6 +707,15 @@ components:
               type: string
               description: GitHub environment name
               example: production
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - createPackage
+              - createStagedPackage
+          description: List of permissions granted to the trusted publisher configuration
+          example: ["createPackage", "createStagedPackage"]
 
     GitLabPipelinesConfig:
       type: object
@@ -675,6 +723,7 @@ components:
         - id
         - type
         - claims
+        - permissions
       properties:
         id:
           type: string
@@ -709,6 +758,15 @@ components:
               type: string
               description: GitLab environment name
               example: production
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - createPackage
+              - createStagedPackage
+          description: List of permissions granted to the trusted publisher configuration
+          example: ["createPackage", "createStagedPackage"]
 
     CircleCIConfig:
       type: object
@@ -716,6 +774,7 @@ components:
         - id
         - type
         - claims
+        - permissions
       properties:
         id:
           type: string
@@ -762,12 +821,22 @@ components:
               description: |
                 The origin repository where the CI job runs, in the format `<vcs-provider>/<org>/<repo>`.
               example: "github.com/myorg/myrepo"
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - createPackage
+              - createStagedPackage
+          description: List of permissions granted to the trusted publisher configuration
+          example: ["createPackage", "createStagedPackage"]
 
     GitLabPipelinesConfigCreate:
       type: object
       required:
         - type
         - claims
+        - permissions
       properties:
         type:
           type: string
@@ -798,12 +867,22 @@ components:
               type: string
               description: GitLab environment name
               example: production
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - createPackage
+              - createStagedPackage
+          description: List of permissions granted to the trusted publisher configuration
+          example: ["createPackage", "createStagedPackage"]
 
     CircleCIConfigCreate:
       type: object
       required:
         - type
         - claims
+        - permissions
       properties:
         type:
           type: string
@@ -846,3 +925,12 @@ components:
               description: |
                 The origin repository where the CI job runs, in the format `<vcs-provider>/<org>/<repo>`.
               example: "github.com/myorg/myrepo"
+        permissions:
+          type: array
+          items:
+            type: string
+            enum:
+              - createPackage
+              - createStagedPackage
+          description: List of permissions granted to the trusted publisher configuration
+          example: ["createPackage", "createStagedPackage"]
