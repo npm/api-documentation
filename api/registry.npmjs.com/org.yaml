@@ -60,7 +60,12 @@ paths:
       tags:
         - Org
       summary: Set user membership in an org
-      description: Set a user's membership in an org. If the user is not already a member, an invite will be sent.
+      description: |
+        Set a user's membership in an org. If the user is not already a member, an invite will be sent.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: changeOrgMembership
       security:
         - npmSessionToken: []
@@ -86,11 +91,18 @@ paths:
           $ref: '#/components/responses/OrgInvite'
         "401":
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        "403":
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
     delete:
       tags:
         - Org
       summary: Remove user membership in an org
-      description: Remove a user's membership in an org
+      description: |
+        Remove a user's membership in an org.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: deleteOrgMembership
       security:
         - npmSessionToken: []
@@ -109,3 +121,5 @@ paths:
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         "401":
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        "403":
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'

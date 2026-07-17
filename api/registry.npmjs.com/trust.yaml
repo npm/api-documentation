@@ -210,6 +210,9 @@ paths:
         - User MUST have write permission to the package
         - MUST have 2FA enabled on their account
         - User MUST be authenticated
+        - Granular Access Tokens with `bypass_2fa: true` are **not** permitted
+          to call this endpoint and receive `403 Forbidden`. Configuring
+          trusted publishers requires an interactive 2FA challenge.
 
       operationId: configureTrustedPublisher
       parameters:
@@ -400,7 +403,7 @@ paths:
                     authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
                     doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
         "403":
-          description: 2fa required
+          description: 2fa required, insufficient permissions, or bypass-2FA GAT
           content:
             application/json:
               schema:
@@ -413,6 +416,10 @@ paths:
                   summary: "Please enable 2fa for your account"
                   value:
                     message: "Please enable 2fa for your account"
+                bypass_2fa_gat:
+                  summary: "Bypass-2FA Granular Access Token not permitted"
+                  value:
+                    message: "This operation is not permitted for Granular Access Tokens created with bypass_2fa. Use an interactive 2FA challenge to configure trusted publishers."
         "404":
           description: Package not found
           content:
@@ -457,6 +464,10 @@ paths:
         - User MUST have write permission to the package
         - MUST have 2FA enabled on their account
         - User MUST be authenticated
+        - Granular Access Tokens with `bypass_2fa: true` are **not** permitted
+          to call this endpoint and receive `403 Forbidden`. Deleting a
+          trusted publisher configuration requires an interactive 2FA
+          challenge.
 
       operationId: deleteTrustedPublisher
       parameters:
@@ -581,6 +592,10 @@ paths:
                   summary: "Insufficient permissions to delete configuration"
                   value:
                     message: "Insufficient permissions to access trusted publisher config for the package"
+                bypass_2fa_gat:
+                  summary: "Bypass-2FA Granular Access Token not permitted"
+                  value:
+                    message: "This operation is not permitted for Granular Access Tokens created with bypass_2fa. Use an interactive 2FA challenge to delete trusted publisher configurations."
         "404":
           description: Package or configuration not found
           content:
