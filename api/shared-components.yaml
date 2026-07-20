@@ -66,22 +66,7 @@ components:
           example:
             error: Missing "Bearer" header.
     Forbidden2FABypassGAT:
-      description: |
-        Forbidden — the request was authenticated with a Granular Access Token
-        that was created with `bypass_2fa: true`. Account, token, and
-        package/team governance changes are not permitted for bypass-2FA GATs
-        and require an interactive 2FA challenge.
-
-        Retry with one of:
-
-        - a Granular Access Token that does **not** bypass 2FA, or
-        - an npm session token with a valid `npm-otp` (interactive 2FA), or
-        - the npm website (interactive flow).
-      headers:
-        npm-notice:
-          description: Notice describing the bypass-2FA GAT restriction.
-          schema:
-            type: string
+      description: Forbidden 
       content:
         application/json:
           schema:
