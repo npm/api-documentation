@@ -419,7 +419,7 @@ paths:
                 bypass_2fa_gat:
                   summary: "Bypass-2FA Granular Access Token not permitted"
                   value:
-                    message: "This operation is not permitted for Granular Access Tokens created with bypass_2fa. Use an interactive 2FA challenge to configure trusted publishers."
+                    message: "Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation"
         "404":
           description: Package not found
           content:
@@ -595,7 +595,7 @@ paths:
                 bypass_2fa_gat:
                   summary: "Bypass-2FA Granular Access Token not permitted"
                   value:
-                    message: "This operation is not permitted for Granular Access Tokens created with bypass_2fa. Use an interactive 2FA challenge to delete trusted publisher configurations."
+                    message: "Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation"
         "404":
           description: Package or configuration not found
           content:

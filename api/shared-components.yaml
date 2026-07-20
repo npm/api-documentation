@@ -91,4 +91,4 @@ components:
                 type: string
                 description: Error message
           example:
-            error: 'This operation is not permitted for Granular Access Tokens created with bypass_2fa. Use an interactive 2FA challenge to perform this action.'
+            error: 'Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation'
