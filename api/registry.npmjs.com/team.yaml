@@ -69,6 +69,8 @@ paths:
               example: { name: 'wombats', description: 'All developers' }
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '201':
           description: Team was created successfully
@@ -104,6 +106,8 @@ paths:
       operationId: deleteTeam
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '204':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
@@ -154,6 +158,8 @@ paths:
                 user: npm-cli-bot
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '201':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
@@ -186,6 +192,8 @@ paths:
                 user: npm-cli-bot
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '204':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'

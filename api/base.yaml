@@ -79,7 +79,7 @@ tags:
       - Token management — `POST /-/npm/v1/tokens`, `DELETE /-/npm/v1/tokens/token/{token}`
       - Account settings — change password, change email, change 2FA
         configuration, generate recovery codes, update profile
-      - Package governance — `POST /-/package/{package}/access`,
+      - Package governance — `POST /-/package/{escapedPackageName}/access`,
         `POST /-/package/{package}/trust`,
         `DELETE /-/package/{package}/trust/{config-uuid}`,
         maintainer edits, and package/binary deletion (unpublish)

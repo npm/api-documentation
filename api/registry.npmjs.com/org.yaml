@@ -69,6 +69,8 @@ paths:
       operationId: changeOrgMembership
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       requestBody:
         required: true
         content:
@@ -106,6 +108,8 @@ paths:
       operationId: deleteOrgMembership
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       requestBody:
         required: true
         content:

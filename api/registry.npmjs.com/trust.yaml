@@ -411,6 +411,8 @@ paths:
                 properties:
                   message:
                     type: string
+                  error:
+                    type: string
               examples:
                 2fa_disabled:
                   summary: "Please enable 2fa for your account"
@@ -419,7 +421,7 @@ paths:
                 bypass_2fa_gat:
                   summary: "Bypass-2FA Granular Access Token not permitted"
                   value:
-                    message: "Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation"
+                    error: "Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation"
         "404":
           description: Package not found
           content:
@@ -575,13 +577,15 @@ paths:
                     authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
                     doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
         "403":
-          description: 2fa required or insufficient permissions
+          description: 2fa required, insufficient permissions, or bypass-2FA GAT
           content:
             application/json:
               schema:
                 type: object
                 properties:
                   message:
+                    type: string
+                  error:
                     type: string
               examples:
                 2fa_disabled:
@@ -595,7 +599,7 @@ paths:
                 bypass_2fa_gat:
                   summary: "Bypass-2FA Granular Access Token not permitted"
                   value:
-                    message: "Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation"
+                    error: "Granular access tokens that bypass two-factor authentication may not perform this action. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation"
         "404":
           description: Package or configuration not found
           content:

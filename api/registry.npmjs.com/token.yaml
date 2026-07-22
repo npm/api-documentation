@@ -136,6 +136,8 @@ paths:
                 - name
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         "201":
           description: "Token created successfully"
@@ -537,6 +539,8 @@ paths:
             this is a token deletion command.
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         "204":
           description: Token deleted successfully
