@@ -11,7 +11,7 @@
   "scripts": {
     "generate": "cd api && npx openapi-merge-cli -c merge-config.yaml",
     "validate": "npx @redocly/cli lint openapi.yaml",
-    "build": "npm run generate && npm run validate && npx @redocly/cli build-docs openapi.yaml -o html/index.html",
+    "build": "npm run generate && npm run validate && npx @redocly/cli build-docs openapi.yaml -o html/index.html --theme.openapi '{\"downloadDefinitionUrl\":\"openapi.json\"}' && npx @redocly/cli bundle openapi.yaml --output html/openapi.json",
     "eslint": "eslint \"**/*.{js,cjs,ts,mjs,jsx,tsx}\"",
     "lint": "npm run lint:yaml && npm run lint:js",
     "lintfix": "npm run eslint -- --fix",
