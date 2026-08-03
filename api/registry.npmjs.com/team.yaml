@@ -46,7 +46,12 @@ paths:
       tags:
         - Team
       summary: Create a new team
-      description: Create a new team for an org
+      description: |
+        Create a new team for an org.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: putScopeTeam
       requestBody:
         required: true
@@ -64,6 +69,8 @@ paths:
               example: { name: 'wombats', description: 'All developers' }
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '201':
           description: Team was created successfully
@@ -79,6 +86,8 @@ paths:
                   name: wombats
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
   /-/org/{orgName}/{teamName}:
     parameters:
       - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
@@ -88,15 +97,24 @@ paths:
       tags:
         - Team
       summary: Delete a team
-      description: Delete a team from a given org
+      description: |
+        Delete a team from a given org.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: deleteTeam
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '204':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
   /-/org/{orgName}/{teamName}/user:
     parameters:
       - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
@@ -119,7 +137,12 @@ paths:
       tags:
         - Team
       summary: Add a user to a team
-      description: Add a user to a team in an org. The user must already be a member of the org.
+      description: |
+        Add a user to a team in an org. The user must already be a member of the org.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: createTeamMembership
       requestBody:
         required: true
@@ -135,15 +158,25 @@ paths:
                 user: npm-cli-bot
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '201':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
     delete:
       tags:
         - Team
       summary: Remove a user from a team
+      description: |
+        Remove a user from a team.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: deleteTeamMembership
       requestBody:
         required: true
@@ -159,8 +192,12 @@ paths:
                 user: npm-cli-bot
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '204':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'

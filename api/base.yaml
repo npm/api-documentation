@@ -64,6 +64,35 @@ tags:
       - `/oidc/token/exchange` endpoint: Only accepts `oidcIdToken`
       - Package publishing: May accept `npmSessionToken`, `npmAccessToken`, or `oidcExchangeToken`
 
+      **Granular Access Tokens with `bypass_2fa`:**
+
+      Granular Access Tokens (GATs) created with `bypass_2fa: true` are
+      allowed to perform automation flows such as direct publish, but they
+      are **not** permitted to perform account-identity or governance write
+      operations. Requests to those endpoints authenticated with a
+      bypass-2FA GAT are rejected with `403 Forbidden` and must instead be
+      performed via an interactive 2FA challenge (npm website, or an npm
+      session token / non-bypass GAT with a valid `npm-otp`).
+
+      Operations rejected for bypass-2FA GATs include (non-exhaustive):
+
+      - Token management — `POST /-/npm/v1/tokens`, `DELETE /-/npm/v1/tokens/token/{token}`
+      - Account settings — change password, change email, change 2FA
+        configuration, generate recovery codes, update profile
+      - Package governance — `POST /-/package/{escapedPackageName}/access`,
+        `POST /-/package/{package}/trust`,
+        `DELETE /-/package/{package}/trust/{config-uuid}`,
+        maintainer edits, and package/binary deletion (unpublish)
+      - Org and team governance —
+        `PUT`/`DELETE /-/org/{orgName}/user`,
+        `PUT /-/org/{orgName}/team`,
+        `DELETE /-/org/{orgName}/{teamName}`,
+        `PUT`/`DELETE /-/org/{orgName}/{teamName}/user`,
+        `PUT`/`DELETE /-/team/{orgName}/{teamName}/package`
+
+      Direct publish (`PUT /{escapedPackageName}`) remains functional for
+      bypass-2FA GATs.
+
   - name: Tokens
     x-displayName: Tokens
     description: |
@@ -131,6 +160,11 @@ components:
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
 
+        GATs created with `bypass_2fa: true` cannot perform account,
+        token, or org/team/package governance write operations — those
+        requests are rejected with `403 Forbidden`. See the Authentication
+        section above for the full list.
+
     # Alias for npmAccessToken - for backward compatibility
     granularAccessToken:
       type: http
@@ -139,6 +173,10 @@ components:
         Granular Access Token (GAT) with fine-grained permissions.
         These tokens can be scoped to specific packages and operations.
         (Alias for npmAccessToken)
+
+        GATs created with `bypass_2fa: true` cannot perform account,
+        token, or org/team/package governance write operations — those
+        requests are rejected with `403 Forbidden`.
 
     # Short-lived tokens obtained from OIDC token exchange
     oidcExchangeToken:

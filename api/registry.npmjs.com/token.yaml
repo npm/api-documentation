@@ -14,6 +14,9 @@ paths:
           - If 2FA is enabled on your account, provide the OTP via the `npm-otp` header
           - If 2FA is not enabled, an email OTP will be sent and must be provided via the `npm-otp` header
           - For WebAuthn users, the OTP is returned in the `doneUrl` after authentication
+        - **Granular Access Tokens with `bypass_2fa: true` are not permitted**
+          to call this endpoint and receive `403 Forbidden`. Token creation
+          (and escalation) requires an interactive 2FA challenge.
 
         **Important notices:**
         - All responses include security notices via the `npm-notice` header regarding token limitations
@@ -86,7 +89,18 @@ paths:
                   description: 'Expiration in days (number) or ISO date string. Read-write tokens: maximum 90 days, defaults to 7 days. Read-only tokens: unlimited maximum, defaults to 30 days'
                 bypass_2fa:
                   type: boolean
-                  description: Allow token to bypass 2FA requirements
+                  description: |
+                    Allow token to bypass 2FA requirements for automation
+                    flows such as direct publish.
+
+                    Tokens created with `bypass_2fa: true` **cannot** perform
+                    account, token, or org/team/package governance write
+                    operations (for example: creating or deleting tokens,
+                    changing package access or trust configuration,
+                    adding/removing org or team members, granting/revoking
+                    team package access, unpublishing). Those requests are
+                    rejected with `403 Forbidden` and must be performed via
+                    an interactive 2FA challenge.
                   default: false
                 cidr:
                   type: array
@@ -122,6 +136,8 @@ paths:
                 - name
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         "201":
           description: "Token created successfully"
@@ -165,7 +181,11 @@ paths:
                     nullable: true
                   bypass_2fa:
                     type: boolean
-                    description: Indicates if the token can bypass 2FA requirements.
+                    description: |
+                      Indicates if the token can bypass 2FA requirements for
+                      automation flows. When `true`, the token is rejected
+                      (`403 Forbidden`) by account, token, and org/team/package
+                      governance write endpoints.
                   revoked:
                     type: string
                     format: date-time
@@ -265,6 +285,8 @@ paths:
                     error: 'Read-write tokens cannot have expiration longer than 90 days'
         "401":
           $ref: '#/components/responses/UnauthorizedWithWebAuth'
+        "403":
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
 
         "500":
           description: Internal server error
@@ -359,7 +381,12 @@ paths:
                           description: Indicates if the token has readonly permissions
                         bypass_2fa:
                           type: boolean
-                          description: Indicates if the token can bypass 2FA requirements
+                          description: |
+                            Indicates if the token can bypass 2FA
+                            requirements for automation flows. When `true`,
+                            the token is rejected (`403 Forbidden`) by
+                            account, token, and org/team/package governance
+                            write endpoints.
                         cidr:
                           type: array
                           items:
@@ -457,6 +484,9 @@ paths:
         **Requirements:**
         - Must be authenticated with a valid Bearer token
         - May require 2FA OTP depending on user settings
+        - **Granular Access Tokens with `bypass_2fa: true` are not permitted**
+          to call this endpoint and receive `403 Forbidden`. Token deletion
+          requires an interactive 2FA challenge.
 
         **Web authentication flow:**
         - When `npm-auth-type=web` and `npm-command=token` headers are present and 2FA is required,
@@ -509,6 +539,8 @@ paths:
             this is a token deletion command.
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         "204":
           description: Token deleted successfully
@@ -586,6 +618,8 @@ paths:
                   value:
                     authUrl: "https://www.npmjs.com/auth/cli/00000000-0000-0000-0000-000000000000"
                     doneUrl: "https://registry.npmjs.org/-/v1/done?authId=00000000-0000-0000-0000-000000000000"
+        "403":
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
         "404":
           description: Not found - Token does not exist
           content:

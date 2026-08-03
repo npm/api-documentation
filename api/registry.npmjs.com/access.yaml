@@ -56,6 +56,12 @@ paths:
       tags:
         - Access
       summary: Grant access to a package for a team
+      description: |
+        Grant a team access to a package.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: createTeamPackageGrant
       requestBody:
         required: true
@@ -75,23 +81,37 @@ paths:
                   description: The access level of the package to grant to the team
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '201':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
     delete:
       tags:
         - Access
       summary: Remove access to a package for a team
+      description: |
+        Remove a team's access to a package.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: deleteTeamPackageGrant
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '204':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
   /-/org/{orgName}/package:
     parameters:
       - $ref: './api/shared-components.yaml#/components/parameters/OrgName'
@@ -148,6 +168,12 @@ paths:
       tags:
         - Access
       summary: Sets the various access levels for a package.
+      description: |
+        Set package visibility and 2FA/automation policy for a package.
+
+        Granular Access Tokens with `bypass_2fa: true` are not permitted to
+        call this endpoint and receive `403 Forbidden`. This operation must
+        be performed via an interactive 2FA challenge.
       operationId: setPackageAccess
       requestBody:
         required: true
@@ -171,8 +197,12 @@ paths:
                   description: Whether or not automation tokens override the requirement for multifactor auth
       security:
         - npmSessionToken: []
+        - npmAccessToken: []
+        - granularAccessToken: []
       responses:
         '200':
           $ref: './api/shared-components.yaml#/components/responses/EmptySuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          $ref: './api/shared-components.yaml#/components/responses/Forbidden2FABypassGAT'
