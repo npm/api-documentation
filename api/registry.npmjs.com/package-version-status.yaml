@@ -108,7 +108,8 @@ components:
               error:
                 type: string
     PackageVersionStatusForbidden:
-      description: Package version status is not enabled for this package.
+      description: |
+        Package version status is not enabled for this package. This is the rollout gate only. Not having access to a package is reported as `404`, not here.
       content:
         application/json:
           schema:
@@ -117,7 +118,8 @@ components:
               error:
                 type: string
     PackageVersionStatusNotFound:
-      description: The package version does not exist or the authenticated user does not have access to it.
+      description: |
+        The package version does not exist, or the authenticated user cannot read it. These are deliberately indistinguishable so the response does not reveal whether a package the caller cannot see exists.
       content:
         application/json:
           schema:
