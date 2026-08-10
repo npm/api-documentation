@@ -108,6 +108,11 @@ tags:
     description: |
       Trust-related endpoints for managing package trust and security settings.
 
+  - name: Packages
+    x-displayName: Packages
+    description: |
+      Package metadata and lifecycle endpoints.
+
 x-tagGroups:
   - name: Introduction
     tags:
@@ -121,6 +126,7 @@ x-tagGroups:
       - Audit
       - OIDC
       - Org
+      - Packages
       - Publish
       - Search
       - Stage

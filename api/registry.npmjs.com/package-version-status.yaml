@@ -1,0 +1,142 @@
+paths:
+  /-/package/{package-name}/version/{version}/status:
+    get:
+      tags:
+        - Packages
+      summary: Get the lifecycle status of an exact package version.
+      description: |
+        Returns the current lifecycle status of an exact package version. The response may represent validation progress, manual approval, or publication without exposing validation-system details.
+
+        The authenticated user must have publish access to the package. A package authorization failure is returned as not found.
+      operationId: getPackageVersionStatus
+      parameters:
+        - name: package-name
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The exact package name. Scoped names must be URL-encoded with the slash escaped.
+        - name: version
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The exact semantic version.
+        - name: Authorization
+          in: header
+          required: true
+          schema:
+            type: string
+            pattern: "^Bearer .+"
+          description: An npm access token or granular access token for a package maintainer.
+      security:
+        - npmAccessToken: []
+        - granularAccessToken: []
+      responses:
+        "200":
+          description: The current lifecycle status of the package version.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PackageVersionStatus"
+              examples:
+                validationInProgress:
+                  summary: The version is still being processed
+                  value:
+                    packageName: "@npmcli/example-package"
+                    version: "1.2.3"
+                    status: validating
+        "401":
+          $ref: "#/components/responses/PackageVersionStatusUnauthorized"
+        "403":
+          $ref: "#/components/responses/PackageVersionStatusForbidden"
+        "404":
+          $ref: "#/components/responses/PackageVersionStatusNotFound"
+        "429":
+          $ref: "#/components/responses/PackageVersionStatusTooManyRequests"
+        "500":
+          $ref: "#/components/responses/PackageVersionStatusInternalServerError"
+        "503":
+          $ref: "#/components/responses/PackageVersionStatusUnavailable"
+components:
+  schemas:
+    PackageVersionStatus:
+      type: object
+      required:
+        - packageName
+        - version
+        - status
+      properties:
+        packageName:
+          type: string
+          description: The exact package name.
+        version:
+          type: string
+          description: The exact package version.
+        status:
+          type: string
+          description: |
+            Where the version currently stands.
+
+            `published` means it is live and installable. `validating` means it is still on its way and the caller should check again shortly. `staged` means it is waiting for a maintainer to approve it. `blocked` means it did not pass automated validation and cannot be installed. `deleted` means it was published and has since been removed.
+          enum:
+            - published
+            - validating
+            - staged
+            - blocked
+            - deleted
+  responses:
+    PackageVersionStatusUnauthorized:
+      description: Authentication is missing or invalid.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    PackageVersionStatusForbidden:
+      description: Package version status is not enabled for this package.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    PackageVersionStatusNotFound:
+      description: The package version does not exist or the authenticated user does not have access to it.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    PackageVersionStatusTooManyRequests:
+      description: The request was rate limited.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    PackageVersionStatusInternalServerError:
+      description: An internal error occurred.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
+    PackageVersionStatusUnavailable:
+      description: The package-version status service is temporarily unavailable.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
