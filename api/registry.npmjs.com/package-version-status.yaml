@@ -46,6 +46,8 @@ paths:
                     packageName: "@npmcli/example-package"
                     version: "1.2.3"
                     status: validating
+        "400":
+          $ref: "#/components/responses/PackageVersionStatusBadRequest"
         "401":
           $ref: "#/components/responses/PackageVersionStatusUnauthorized"
         "403":
@@ -86,6 +88,16 @@ components:
             - blocked
             - deleted
   responses:
+    PackageVersionStatusBadRequest:
+      description: |
+        The package name or the version is not valid. The version must be an exact semver version, so a range such as `^1.0.0` is rejected. This is checked before authentication, so it is returned even when no credential is supplied.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              error:
+                type: string
     PackageVersionStatusUnauthorized:
       description: Authentication is missing or invalid.
       content:
