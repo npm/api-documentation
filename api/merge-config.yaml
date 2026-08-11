@@ -4,6 +4,7 @@ inputs:
   - inputFile: registry.npmjs.com/audit.yaml
   - inputFile: registry.npmjs.com/oidc.yaml
   - inputFile: registry.npmjs.com/org.yaml
+  - inputFile: registry.npmjs.com/package-version-status.yaml
   - inputFile: registry.npmjs.com/publish.yaml
   - inputFile: registry.npmjs.com/search.yaml
   - inputFile: registry.npmjs.com/stage.yaml
