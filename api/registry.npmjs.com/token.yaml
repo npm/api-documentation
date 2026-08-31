@@ -3,10 +3,9 @@ paths:
     post:
       tags:
         - Tokens
-      summary: Create npm access token
+      summary: Create npm granular access token
       description: |
-        Create a new npm access token with customizable permissions, scope restrictions,
-        expiration, and CIDR IP range limitations.
+        Create a new npm granular access token with customizable permissions, scope restrictions, expiration, and CIDR IP range limitations.
 
         **Requirements:**
         - Must be authenticated
@@ -29,12 +28,13 @@ paths:
             type: string
             pattern: '^Bearer .+'
           description: |
-            Bearer token for authentication. Must be an npm access token.
+            Bearer token for authentication. Must be an npm session token or a Granular Access Token (GAT) that does not bypass 2FA.
 
             **Format:** `Bearer <token>`
 
             **Accepted token types:**
-            - npm access token (traditional user token created via `npm login`)
+            - npm session token created via `npm login`
+            - Granular Access Token (GAT) with `bypass_2fa: false`
         - name: npm-otp
           in: header
           required: true
@@ -86,21 +86,13 @@ paths:
                   oneOf:
                     - type: number
                     - type: string
-                  description: 'Expiration in days (number) or ISO date string. Read-write tokens: maximum 90 days, defaults to 7 days. Read-only tokens: unlimited maximum, defaults to 30 days'
+                  description: 'Expiration in days (number) or ISO date string. GATs with any read-write permission have a maximum of 90 days and default to 7 days. GATs with only read permissions have no maximum and default to 30 days'
                 bypass_2fa:
                   type: boolean
                   description: |
-                    Allow token to bypass 2FA requirements for automation
-                    flows such as direct publish.
+                    Marks this granular access token for automation that may bypass 2FA requirements, such as direct publish. This property does not create a separate automation token type.
 
-                    Tokens created with `bypass_2fa: true` **cannot** perform
-                    account, token, or org/team/package governance write
-                    operations (for example: creating or deleting tokens,
-                    changing package access or trust configuration,
-                    adding/removing org or team members, granting/revoking
-                    team package access, unpublishing). Those requests are
-                    rejected with `403 Forbidden` and must be performed via
-                    an interactive 2FA challenge.
+                    GATs created with `bypass_2fa: true` **cannot** perform account, token, or org/team/package governance write operations (for example: creating or deleting tokens, changing package access or trust configuration, adding/removing org or team members, granting/revoking team package access, unpublishing). Those requests are rejected with `403 Forbidden` and must be performed via an interactive 2FA challenge.
                   default: false
                 cidr:
                   type: array
@@ -182,10 +174,7 @@ paths:
                   bypass_2fa:
                     type: boolean
                     description: |
-                      Indicates if the token can bypass 2FA requirements for
-                      automation flows. When `true`, the token is rejected
-                      (`403 Forbidden`) by account, token, and org/team/package
-                      governance write endpoints.
+                      Indicates whether this GAT may bypass 2FA requirements for automation flows. This is a property of the GAT, not a separate automation token type. When `true`, the GAT is rejected (`403 Forbidden`) by account, token, and org/team/package governance write endpoints.
                   revoked:
                     type: string
                     format: date-time
@@ -280,7 +269,7 @@ paths:
                   value:
                     error: 'Please select at least one: package, scope or organization.'
                 expirationLimit:
-                  summary: Expiration exceeds maximum for read-write tokens
+                  summary: Expiration exceeds maximum for a GAT with read-write permissions
                   value:
                     error: 'Read-write tokens cannot have expiration longer than 90 days'
         "401":
@@ -301,9 +290,9 @@ paths:
     get:
       tags:
         - Tokens
-      summary: List npm access tokens
+      summary: List npm granular access tokens
       description: |
-        List all access tokens associated with the authenticated user's account.
+        List all granular access tokens associated with the authenticated user's account.
 
         **Requirements:**
         - Must be authenticated with a valid Bearer token
@@ -321,7 +310,7 @@ paths:
             type: string
             pattern: '^Bearer .+'
           description: |
-            Bearer token for authentication. Must be an npm access token.
+            Bearer session token for authentication. Must be the npm session token created via `npm login`.
 
             **Format:** `Bearer <token>`
         - name: page
@@ -342,7 +331,7 @@ paths:
         - npmSessionToken: []
       responses:
         "200":
-          description: "List of tokens retrieved successfully"
+          description: "List of granular access tokens retrieved successfully"
           headers:
             npm-notice:
               description: |
@@ -376,17 +365,10 @@ paths:
                           type: string
                           description: 'Redacted token in format: npm_aBcD...7890 (first 8 chars + ... + last 4 chars)'
                           example: npm_aBcD...7890
-                        readonly:
-                          type: boolean
-                          description: Indicates if the token has readonly permissions
                         bypass_2fa:
                           type: boolean
                           description: |
-                            Indicates if the token can bypass 2FA
-                            requirements for automation flows. When `true`,
-                            the token is rejected (`403 Forbidden`) by
-                            account, token, and org/team/package governance
-                            write endpoints.
+                            Indicates whether this GAT may bypass 2FA requirements for automation flows. This is a property of the GAT, not a separate automation token type. When `true`, the GAT is rejected (`403 Forbidden`) by account, token, and org/team/package governance write endpoints.
                         cidr:
                           type: array
                           items:
@@ -437,7 +419,7 @@ paths:
                           description: List of scopes this token has access to
                   total:
                     type: integer
-                    description: Total number of tokens
+                    description: Total number of granular access tokens
                   urls:
                     type: object
                     description: Pagination URLs for next/previous pages
