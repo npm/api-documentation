@@ -20,6 +20,19 @@ paths:
       tags:
         - Publish
       summary: Publish a new version of a package
+      description: |
+        Publish a new package version directly to the registry.
+
+        Stage-only Granular Access Tokens cannot publish new versions through this
+        endpoint, even with `bypass_2fa: true`. Requests rejected by the publish-policy
+        check return `403 Forbidden` with `E_STAGE_REQUIRED` in the error message.
+        Earlier authentication or package authorization checks can return other errors,
+        including `404 Not Found`. Rejected requests are not automatically redirected
+        to staging. Use `POST /-/stage/package/{package-name}`
+        (`npm stage publish`), followed by maintainer approval with 2FA.
+
+        The stage-only policy restricts new-version publication, not other package
+        metadata writes. Existing authorization and 2FA requirements still apply.
       operationId: publish
       requestBody:
         required: true
