@@ -31,8 +31,8 @@ paths:
         to staging. Use `POST /-/stage/package/{package-name}`
         (`npm stage publish`), followed by maintainer approval with 2FA.
 
-        The stage-only policy restricts new-version publication, not other package
-        metadata writes. Existing authorization and 2FA requirements still apply.
+        The stage-only policy restricts new-version publication. Existing authorization 
+        and 2FA requirements still apply.
       operationId: publish
       requestBody:
         required: true
