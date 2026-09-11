@@ -345,7 +345,8 @@ paths:
       tags:
         - Tokens
       summary: List npm access tokens
-      description: | List all access tokens associated with the authenticated user's account.
+      description: |
+        List all access tokens associated with the authenticated user's account.
 
         **Requirements:**
         - Must be authenticated with a valid Bearer token
