@@ -67,7 +67,7 @@ tags:
       **Granular Access Tokens with `bypass_2fa`:**
 
       Granular Access Tokens (GATs) created with `bypass_2fa: true` are
-      allowed to perform automation flows such as direct publish, but they
+      allowed to perform automation flows within their scopes and publish policy, but they
       are **not** permitted to perform account-identity or governance write
       operations. Requests to those endpoints authenticated with a
       bypass-2FA GAT are rejected with `403 Forbidden` and must instead be
@@ -91,7 +91,7 @@ tags:
         `PUT`/`DELETE /-/team/{orgName}/{teamName}/package`
 
       Direct publish (`PUT /{escapedPackageName}`) remains functional for
-      bypass-2FA GATs.
+      direct-capable bypass-2FA GATs. It is not permitted for stage-only GATs.
 
   - name: Tokens
     x-displayName: Tokens
