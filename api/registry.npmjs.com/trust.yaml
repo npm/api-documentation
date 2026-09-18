@@ -10,6 +10,9 @@ paths:
         This endpoint allows users with write permission to the package to view all existing trusted publisher
         configurations that have been set up for OIDC token exchange for their package.
 
+        Each configuration's `permissions` array lists its allowed actions. The `manageDistTags`
+        permission is present only when dist-tag access has been explicitly enabled for that configuration.
+
         ## Configuration Structure
 
         The structure of the payload follows a specific design. Each trusted provider has their own unique set of claims.
@@ -205,6 +208,13 @@ paths:
         without requiring long-lived npm tokens. The configuration also defines the specific permissions
         granted to the trusted publisher, controlling what actions it is allowed to perform.
 
+        To allow dist-tag operations, include `manageDistTags` in `permissions`. This permission is
+        opt-in, is not added to existing configurations automatically, and is independent of
+        `createPackage`. For example, `["createStagedPackage", "manageDistTags"]` allows staged
+        publishing and dist-tag management without direct publishing. It applies to all dist-tags
+        for this package; it cannot be restricted to individual tag names. Permissions are granted
+        per configuration, so enabling or disabling this permission does not change other configurations.
+
         ## Requirements
         - Package MUST exist
         - User MUST have write permission to the package
@@ -264,6 +274,18 @@ paths:
                     permissions:
                       - "createPackage"
                       - "createStagedPackage"
+              github_stage_and_dist_tags:
+                summary: GitHub Actions with staged publishing and dist-tag access
+                value:
+                  - type: "github"
+                    claims:
+                      repository: "my-org/my-package"
+                      workflow_ref:
+                        file: "release.yml"
+                      environment: "production"
+                    permissions:
+                      - "createStagedPackage"
+                      - "manageDistTags"
               gitlab:
                 summary: GitLab CI configuration array
                 value:
@@ -687,6 +709,7 @@ components:
             enum:
               - createPackage
               - createStagedPackage
+              - manageDistTags
           description: List of permissions granted to the trusted publisher configuration
           example: ["createPackage", "createStagedPackage"]
 
@@ -733,6 +756,7 @@ components:
             enum:
               - createPackage
               - createStagedPackage
+              - manageDistTags
           description: List of permissions granted to the trusted publisher configuration
           example: ["createPackage", "createStagedPackage"]
 
@@ -784,6 +808,7 @@ components:
             enum:
               - createPackage
               - createStagedPackage
+              - manageDistTags
           description: List of permissions granted to the trusted publisher configuration
           example: ["createPackage", "createStagedPackage"]
 
@@ -847,6 +872,7 @@ components:
             enum:
               - createPackage
               - createStagedPackage
+              - manageDistTags
           description: List of permissions granted to the trusted publisher configuration
           example: ["createPackage", "createStagedPackage"]
 
@@ -893,6 +919,7 @@ components:
             enum:
               - createPackage
               - createStagedPackage
+              - manageDistTags
           description: List of permissions granted to the trusted publisher configuration
           example: ["createPackage", "createStagedPackage"]
 
@@ -951,5 +978,6 @@ components:
             enum:
               - createPackage
               - createStagedPackage
+              - manageDistTags
           description: List of permissions granted to the trusted publisher configuration
           example: ["createPackage", "createStagedPackage"]
