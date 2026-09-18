@@ -11,11 +11,6 @@ paths:
         configuration explicitly grants `manageDistTags`. This permission is disabled by default
         and is independent of direct-publish permission.
 
-        **Dist-tag operations:**
-        - `GET /-/package/{package_name}/dist-tags` lists the package's tags. Public tags are also readable without authentication; private tag reads require the grant.
-        - `PUT /-/package/{package_name}/dist-tags/{tag}` adds or moves a tag. Send the version as a JSON string, for example `"2.1.0"`.
-        - `DELETE /-/package/{package_name}/dist-tags/{tag}` removes a tag.
-
         **OIDC Token Requirements:**
         - The Bearer token must be an OIDC id_token from a [supported Identity Provider (IdP)](https://docs.npmjs.com/trusted-publishers#supported-cicd-providers)
         - The `aud` (audience) claim must be set to `npm:registry.npmjs.org`
