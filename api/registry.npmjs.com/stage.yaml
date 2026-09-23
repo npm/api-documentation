@@ -97,15 +97,14 @@ paths:
     post:
       tags:
         - Stage
-      summary: Stage a package version for maintainer review, creating the package if it does not yet exist.
+      summary: Publishes a package version to staging to be reviewed by maintainers.
       description: |
         Submit a package version to staging for maintainer review.
 
         This endpoint supports both staging a new version of an existing package and
         creating a brand-new package. When the package does not yet exist in the
-        registry, staging its first version creates the package on approval — you do
-        not need to publish the package directly beforehand. The authenticated
-        publisher must be allowed to create the package name (for example, hold the
+        registry, staging its first version creates the package with a standardized placeholder version. 
+        The authenticated publisher must be allowed to create the package name (for example, hold the
         relevant scope or organization permissions).
 
         The request body must contain a publish-style packument payload, including version
@@ -113,7 +112,6 @@ paths:
         approved, or deleted by authorized maintainers.
 
         ## Requirements
-        - Package MUST already exist, or the authenticated publisher MUST be permitted to create it (staging the first version creates a new package on approval)
         - User MUST be authenticated with a valid npm token
         - Request body MUST include required fields in `StagedPackumentRequest`
       operationId: stagePackageVersion
@@ -330,8 +328,7 @@ paths:
 
         This endpoint moves a version from staged review state to a published package
         version. On success, the staged record will be processed and the package version will become
-        installable. If the staged version is the first version of a package that does not
-        yet exist, approving it creates the new package in the registry.
+        installable. 
 
         ## Requirements
         - `stage-id` MUST reference an existing staged package version
