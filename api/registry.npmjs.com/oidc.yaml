@@ -7,6 +7,10 @@ paths:
       description: |
         Exchange a valid OIDC id_token (provided as a Bearer token) for a short-lived npm registry access token for the specified package.
 
+        The returned npm token can also be used for dist-tag operations when its trusted publisher
+        configuration explicitly grants `manageDistTags`. This permission is disabled by default
+        and is independent of direct-publish permission.
+
         **OIDC Token Requirements:**
         - The Bearer token must be an OIDC id_token from a [supported Identity Provider (IdP)](https://docs.npmjs.com/trusted-publishers#supported-cicd-providers)
         - The `aud` (audience) claim must be set to `npm:registry.npmjs.org`
