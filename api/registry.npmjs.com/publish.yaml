@@ -23,6 +23,14 @@ paths:
       description: |
         Publish a new package version directly to the registry.
 
+        **Upcoming change in January 2027:** granular access tokens that bypass 2FA
+        will no longer be able to publish new versions directly, including the first
+        version of a new package. 
+        Use trusted publishing, an interactive publishing session, or a token without 
+        bypass 2FA for direct publication.
+        For automated staging, create a stage-only token and use
+        `POST /-/stage/package/{package-name}`, followed by human-2FA approval.
+
         Stage-only Granular Access Tokens cannot publish new versions through this
         endpoint, even with `bypass_2fa: true`. Requests rejected by the publish-policy
         check return `403 Forbidden` with `E_STAGE_REQUIRED` in the error message.
@@ -160,3 +168,25 @@ paths:
           $ref: '#/components/responses/PublishSuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          description: |
+            Direct publishing is not permitted by the token's publish policy.
+            Requests rejected by this check include `E_STAGE_REQUIRED` in the error
+            message. Use staged publishing followed by maintainer approval with 2FA.
+          headers:
+            npm-notice:
+              description: Guidance to stage the version instead of publishing directly.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  error:
+                    type: string
+              example:
+                error: 'This token can only publish to a staging area. Run `npm stage publish` to publish this version, then approve it. (E_STAGE_REQUIRED)'
+        '404':
+          description: |
+            The scoped package is missing or inaccessible. An `npm-notice` header may provide staging guidance.

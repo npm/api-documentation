@@ -8,6 +8,12 @@ paths:
         Create a new npm access token with customizable permissions, scope restrictions,
         expiration, and CIDR IP range limitations.
 
+        **Upcoming change in January 2027:** granular access tokens that bypass 2FA
+        will no longer support direct publishing. Creating a token with
+        `bypass_2fa: true` and `packages_and_scopes_permission: read-write` will
+        return `400 Bad Request`. Use `read-only` for installs or
+        `read-write-stage-only` for staged publishing.
+
         To create a stage-only Granular Access Token (GAT), set
         `packages_and_scopes_permission` to `read-write-stage-only` and select
         at least one package or scope. This grants package write access but
@@ -109,6 +115,9 @@ paths:
                   description: |
                     Allow token to bypass 2FA requirements for automation
                     flows permitted by its package permissions and publish policy.
+                    From the January 2027 cutover, this cannot be combined with
+                    `packages_and_scopes_permission: read-write`; choose read-only,
+                    stage-only or no package access instead.
                     This does not allow a stage-only token to publish directly or
                     bypass the 2FA challenge when approving a staged version.
 
@@ -279,6 +288,10 @@ paths:
                   error:
                     type: string
               examples:
+                bypassDirectPublish:
+                  summary: Bypass 2FA combined with direct-publish access after the January 2027 cutover
+                  value:
+                    error: 'Granular access tokens that bypass two-factor authentication can no longer publish directly. Create the token with read-only or stage-only package access (CLI: `--packages-and-scopes-permission=read-write-stage-only`). For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation'
                 missingName:
                   summary: Missing token name
                   value:
