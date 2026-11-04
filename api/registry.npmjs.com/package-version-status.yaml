@@ -50,8 +50,6 @@ paths:
           $ref: "#/components/responses/PackageVersionStatusBadRequest"
         "401":
           $ref: "#/components/responses/PackageVersionStatusUnauthorized"
-        "403":
-          $ref: "#/components/responses/PackageVersionStatusForbidden"
         "404":
           $ref: "#/components/responses/PackageVersionStatusNotFound"
         "429":
@@ -100,16 +98,6 @@ components:
                 type: string
     PackageVersionStatusUnauthorized:
       description: Authentication is missing or invalid.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              error:
-                type: string
-    PackageVersionStatusForbidden:
-      description: |
-        Package version status is not enabled for this package. This is the rollout gate only. Not having access to a package is reported as `404`, not here.
       content:
         application/json:
           schema:
