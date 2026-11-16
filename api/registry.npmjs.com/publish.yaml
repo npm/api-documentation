@@ -25,9 +25,9 @@ paths:
 
         **Upcoming change in January 2027:** granular access tokens that bypass 2FA
         will no longer be able to publish new versions directly, including the first
-        version of a new package. 
-        Use trusted publishing, an interactive publishing session, or a token without 
-        bypass 2FA for direct publication.
+        version of a new package.
+        For direct publication, use trusted publishing, or an account with 2FA enabled
+        (interactively or with a token without bypass 2FA) and complete any 2FA challenge.
         For automated staging, create a stage-only token and use
         `POST /-/stage/package/{package-name}`, followed by human-2FA approval.
 
@@ -170,12 +170,14 @@ paths:
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
         '403':
           description: |
-            Direct publishing is not permitted by the token's publish policy.
-            Requests rejected by this check include `E_STAGE_REQUIRED` in the error
-            message. Use staged publishing followed by maintainer approval with 2FA.
+            Forbidden. Returned when the token's publish policy does not allow direct
+            publishing, or when other authorization or 2FA requirements are not met.
+            Publish-policy rejections include `E_STAGE_REQUIRED` in the error message
+            and in the `npm-notice` header. Use staged publishing followed by
+            maintainer approval with 2FA.
           headers:
             npm-notice:
-              description: Guidance to stage the version instead of publishing directly.
+              description: For publish-policy rejections, guidance to stage the version instead of publishing directly.
               schema:
                 type: string
           content:
@@ -183,9 +185,12 @@ paths:
               schema:
                 type: object
                 properties:
+                  success:
+                    type: boolean
                   error:
                     type: string
               example:
+                success: false
                 error: 'This token can only publish to a staging area. Run `npm stage publish` to publish this version, then approve it. (E_STAGE_REQUIRED)'
         '404':
           description: |
