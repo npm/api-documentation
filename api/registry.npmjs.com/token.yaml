@@ -288,10 +288,6 @@ paths:
                   error:
                     type: string
               examples:
-                bypassDirectPublish:
-                  summary: Bypass 2FA combined with direct-publish access after the January 2027 cutover
-                  value:
-                    error: 'Granular access tokens that bypass two-factor authentication can no longer publish directly. Create the token with read-only or stage-only package access. For more info, visit: https://gh.io/npm-gat-bypass2fa-deprecation'
                 missingName:
                   summary: Missing token name
                   value:
