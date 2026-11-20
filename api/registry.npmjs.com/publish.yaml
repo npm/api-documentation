@@ -23,6 +23,14 @@ paths:
       description: |
         Publish a new package version directly to the registry.
 
+        **Upcoming change in January 2027:** granular access tokens that bypass 2FA
+        will no longer be able to publish new versions directly, including the first
+        version of a new package.
+        For direct publication, use trusted publishing, or an account with 2FA enabled
+        (interactively or with a token without bypass 2FA) and complete any 2FA challenge.
+        For automated staging, create a stage-only token and use
+        `POST /-/stage/package/{package-name}`, followed by human-2FA approval.
+
         Stage-only Granular Access Tokens cannot publish new versions through this
         endpoint, even with `bypass_2fa: true`. Requests rejected by the publish-policy
         check return `403 Forbidden` with `E_STAGE_REQUIRED` in the error message.
@@ -160,3 +168,30 @@ paths:
           $ref: '#/components/responses/PublishSuccess'
         '401':
           $ref: './api/shared-components.yaml#/components/responses/Unauthorized'
+        '403':
+          description: |
+            Forbidden. Returned when the token's publish policy does not allow direct
+            publishing, or when other authorization or 2FA requirements are not met.
+            Publish-policy rejections include `E_STAGE_REQUIRED` in the error message
+            and in the `npm-notice` header. Use staged publishing followed by
+            maintainer approval with 2FA.
+          headers:
+            npm-notice:
+              description: For publish-policy rejections, guidance to stage the version instead of publishing directly.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  error:
+                    type: string
+              example:
+                success: false
+                error: 'This token can only publish to a staging area. Run `npm stage publish` to publish this version, then approve it. (E_STAGE_REQUIRED)'
+        '404':
+          description: |
+            The scoped package is missing or inaccessible. An `npm-notice` header may provide staging guidance.
